@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <!--Publish Package START-->
+    <PropertyGroup>
+        <PackageId>LTs.Web</PackageId>
+        <Version>8.0.0-preview1</Version>
+        <Authors>LTsoft</Authors>
+        <Description>LTs.Web</Description>
+        <Copyright>Copyright 2026</Copyright>
+        <RepositoryUrl>https://github.com/LTsoft-repo/LTs.Utils.git</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    <!--Publish Package END-->
+
+    <ItemGroup>
+        <PackageReference Include="IdentityModel" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\LTs.Configurations\LTs.Configurations.csproj" />
+        <ProjectReference Include="..\LTs.Utils\LTs.Utils.csproj" />
+    </ItemGroup>
+
+</Project>
