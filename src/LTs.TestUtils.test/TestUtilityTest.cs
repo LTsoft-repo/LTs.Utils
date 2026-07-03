@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 
@@ -53,9 +53,7 @@ public class TestUtilityTest
     {
         // Arrange
         Task<bool> Condition()
-        {
-            return Task.FromResult( true );
-        }
+            => Task.FromResult( true );
 
         // Act
         await TestUtility.RetryAsync( Condition );
@@ -68,9 +66,7 @@ public class TestUtilityTest
     {
         // Arrange
         Task<bool> Condition()
-        {
-            return Task.FromResult( false );
-        }
+            => Task.FromResult( false );
 
         // Act
         var act = () => TestUtility.RetryAsync( Condition, 1000, 100 );
@@ -89,9 +85,7 @@ public class TestUtilityTest
         var executionTime = 1000;
 
         Task<bool> Condition()
-        {
-            return DateTime.Now < startTime.AddMilliseconds( executionTime ) ? Task.FromResult( false ) : Task.FromResult( true );
-        }
+            => DateTime.Now < startTime.AddMilliseconds( executionTime ) ? Task.FromResult( false ) : Task.FromResult( true );
 
         // Act
         var watch = new Stopwatch();

@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 using LTs.Configurations.Configurations;
 using LTs.Configurations.Exceptions;
 using Microsoft.Extensions.Configuration;
@@ -69,7 +69,7 @@ public class ScheduleConfigurationLoaderTest
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage( "Failed to convert configuration value at 'Schedules:Use1:TimeInMilliseconds' to type 'System.Int32'." );
+           .WithMessage( "Failed to convert configuration value* at 'Schedules:Use1:TimeInMilliseconds' to type 'System.Int32'." );
     }
     #endregion
 
@@ -135,7 +135,7 @@ public class ScheduleConfigurationLoaderTest
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage( "Failed to convert configuration value at 'Schedules:Use1:TimeInMilliseconds' to type 'System.Int32'." );
+           .WithMessage( "Failed to convert configuration value* at 'Schedules:Use1:TimeInMilliseconds' to type 'System.Int32'." );
     }
     #endregion
 

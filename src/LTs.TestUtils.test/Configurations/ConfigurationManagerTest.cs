@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using ConfigurationManager = LTs.TestUtils.Configurations.ConfigurationManager;
 
 namespace LTs.TestUtils.test.Configurations;
