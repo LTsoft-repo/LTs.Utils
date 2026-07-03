@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
-using LTs.Utils.Extensions.Web;
+using LTs.Web.Extensions;
 
-namespace LTs.Utils.test.Extensions.Web;
+namespace LTs.Web.test.Extensions;
 
 public class HttContentExtensionsTest
 {
