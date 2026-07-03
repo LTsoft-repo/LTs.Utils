@@ -33,11 +33,12 @@ public static class ReflectionAttributeExtensions
     ///     <see langword="true" /> if the class has an attribute of type <paramref name="attributeType" />;
     ///     otherwise, <see langword="false" />.
     /// </returns>
+    [ UsedImplicitly ]
     public static bool HasAttribute( this Type type, Type attributeType )
     {
         // Checks that attributeType is a subclass of Attribute.
-        ArgumentNullException.ThrowIfNull( type, nameof( type ) );
-        ArgumentNullException.ThrowIfNull( attributeType, nameof( attributeType ) );
+        ArgumentNullException.ThrowIfNull( type );
+        ArgumentNullException.ThrowIfNull( attributeType );
 
         if( !typeof( Attribute ).IsAssignableFrom( attributeType ) )
         {
@@ -74,11 +75,12 @@ public static class ReflectionAttributeExtensions
     ///     <see langword="true" /> if the property has an attribute of type <paramref name="attributeType" />;
     ///     otherwise, <see langword="false" />.
     /// </returns>
+    [ UsedImplicitly ]
     public static bool HasAttribute( this PropertyInfo propertyInfo, Type attributeType )
     {
         // Checks that attributeType is a subclass of Attribute.
-        ArgumentNullException.ThrowIfNull( propertyInfo, nameof( propertyInfo ) );
-        ArgumentNullException.ThrowIfNull( attributeType, nameof( attributeType ) );
+        ArgumentNullException.ThrowIfNull( propertyInfo );
+        ArgumentNullException.ThrowIfNull( attributeType );
 
         if( !typeof( Attribute ).IsAssignableFrom( attributeType ) )
         {
@@ -107,6 +109,7 @@ public static class ReflectionAttributeExtensions
     ///     The <see cref="Type" /> of the attribute to check for. Must derive from <see cref="Attribute" />.
     /// </param>
     /// <returns>The <see cref="IEnumerable{PropertyInfo}" /> of properties that have the attribute.</returns>
+    [ UsedImplicitly ]
     public static IEnumerable<PropertyInfo> FindPropertiesWithAttribute( this Type type, Type attributeType )
         => type.GetProperties()
                .Where( p => p.HasAttribute( attributeType ) );

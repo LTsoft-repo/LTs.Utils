@@ -1,10 +1,11 @@
 ﻿using Autofac;
 using LTs.DependencyInjections.DependencyInjection;
+using LTs.DependencyInjections.test.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LTs.DependencyInjections.test.DependencyInjection;
 
-public class AutofacRegistrationExtensionsTest
+public class AutofacServiceProviderFactoryTest
 {
     #region Populate
     [ Fact ]
@@ -39,7 +40,3 @@ public class AutofacRegistrationExtensionsTest
     }
     #endregion
 }
-
-// ReSharper disable once RedundantTypeDeclarationBody
-
-// ReSharper disable once RedundantTypeDeclarationBody

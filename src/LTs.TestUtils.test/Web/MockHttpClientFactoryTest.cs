@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using LTs.TestUtils.Web;
-using LTs.Utils.Extensions.Web;
+using LTs.Web.Extensions;
 
 namespace LTs.TestUtils.test.Web;
 

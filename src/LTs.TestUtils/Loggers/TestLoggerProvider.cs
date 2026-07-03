@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace LTs.TestUtils;
+namespace LTs.TestUtils.Loggers;
 
 /// <summary>
 ///     Logger provider for xUnit tests.

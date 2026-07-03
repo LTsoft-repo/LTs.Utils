@@ -2,8 +2,8 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using LTs.Web.Extensions;
 using RichardSzalay.MockHttp;
-using LTs.Utils.Extensions.Web;
 
 namespace LTs.TestUtils.Web;
 
@@ -250,9 +250,8 @@ public static class MockHttpClientFactory
         }
 
         string GetJwksResponse()
-        {
             // ReSharper disable StringLiteralTypo
-            return @"
+            => @"
             {
                 ""keys"": [
                     {
@@ -265,13 +264,11 @@ public static class MockHttpClientFactory
                     }
                 ]
             }";
-            // ReSharper restore StringLiteralTypo
-        }
+        // ReSharper restore StringLiteralTypo
 
         string GetTokenResponse()
-        {
             // ReSharper disable StringLiteralTypo
-            return $@"
+            => $@"
             {{
                 ""access_token"": ""{accessToken}"",
                 ""token_type"": ""Bearer"",
@@ -279,8 +276,7 @@ public static class MockHttpClientFactory
                 ""refresh_token"": ""eJzrW9cuI..."",
                 ""id_token"": ""{idToken}""
             }}";
-            // ReSharper restore StringLiteralTypo
-        }
+        // ReSharper restore StringLiteralTypo
 
         var encoding = Encoding.UTF8;
         var mediaType = "application/json";

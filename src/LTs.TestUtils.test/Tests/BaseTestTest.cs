@@ -1,13 +1,12 @@
-﻿using JetBrains.Annotations;
-using LTs.TestUtils.Tests;
+﻿using LTs.TestUtils.test.Infrastructure;
 
 namespace LTs.TestUtils.test.Tests;
 
-public class DisposableTestTest
+public class BaseTestTest
 {
     private readonly ITestOutputHelper testOutput;
 
-    public DisposableTestTest( ITestOutputHelper testOutput )
+    public BaseTestTest( ITestOutputHelper testOutput )
         => this.testOutput = testOutput;
 
     #region TestOutput
@@ -15,7 +14,7 @@ public class DisposableTestTest
     public void TestOutput_WithTestOutput_ReturnsTestOutput()
     {
         // Arrange
-        var test = new TestDisposableTest( testOutput );
+        var test = new TestClass( testOutput );
 
         // Act
         var output = test.GetTestOutput();
@@ -34,7 +33,7 @@ public class DisposableTestTest
         var disposable2 = new DisposableClass();
         var disposable3 = new DisposableClass();
 
-        var test = new TestDisposableTest( testOutput );
+        var test = new TestClass( testOutput );
         test.AddDisposable( disposable1 );
         test.AddDisposable( disposable2 );
         test.AddDisposable( disposable3 );
@@ -55,7 +54,7 @@ public class DisposableTestTest
     public void Dispose_NoDisposables_Successes()
     {
         // Arrange
-        var test = new TestDisposableTest( testOutput );
+        var test = new TestClass( testOutput );
 
         // Act
         test.Dispose();
@@ -65,29 +64,4 @@ public class DisposableTestTest
         disposables.Should().BeEmpty();
     }
     #endregion
-
-    [ UsedImplicitly ]
-    public class TestDisposableTest : DisposableTest
-    {
-        // ReSharper disable once ConvertToPrimaryConstructor
-        public TestDisposableTest( ITestOutputHelper testOutput ) : base( testOutput ) { }
-
-        public void AddDisposable( IDisposable disposable )
-            => Disposables.Add( disposable );
-
-        public ITestOutputHelper GetTestOutput()
-            => TestOutput;
-
-        public IEnumerable<IDisposable> GetDisposables()
-            => Disposables;
-    }
-
-    [ UsedImplicitly ]
-    public class DisposableClass : IDisposable
-    {
-        public bool IsDisposed { get; private set; }
-
-        public void Dispose()
-            => IsDisposed = true;
-    }
 }

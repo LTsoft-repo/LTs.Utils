@@ -3,7 +3,7 @@ using LTs.Utils.test.Infrastructure;
 
 namespace LTs.Utils.test.Reflection;
 
-public class ReflectionPropertiesExtensionsTest : DisposableTest
+public class ReflectionPropertiesExtensionsTest : BaseTest
 {
     public ReflectionPropertiesExtensionsTest( ITestOutputHelper testOutput )
         : base( testOutput ) { }
