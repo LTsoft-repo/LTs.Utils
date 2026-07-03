@@ -5,7 +5,9 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[ assembly: SuppressMessage( "Style", "IDE0290:Use primary constructor", Justification = "<Pending>" ) ]
+[ assembly: SuppressMessage( "Style",
+                             "IDE0290:Use primary constructor",
+                             Justification = "Primary constructors are not desired in project" ) ]
 [ assembly:
     SuppressMessage( "Performance",
                      "CA1859:Use concrete types when possible for improved performance",
