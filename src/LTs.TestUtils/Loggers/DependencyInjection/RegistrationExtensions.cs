@@ -1,12 +1,12 @@
 ﻿using Autofac;
 using Microsoft.Extensions.Logging;
 
-namespace LTs.TestUtils.Loggers;
+namespace LTs.TestUtils.Loggers.DependencyInjection;
 
 /// <summary>
 ///     Extensions to register the <see cref="TestLogger{T}" />.
 /// </summary>
-public static class TestLoggerRegistrationExtensions
+public static class RegistrationExtensions
 {
     /// <summary>
     ///     Registers the <see cref="TestLogger{T}" /> as <see cref="ILogger{T}" /> generic.

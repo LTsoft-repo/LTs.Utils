@@ -1,13 +1,14 @@
 ﻿using Autofac;
-using LTs.TestUtils.Loggers;
+using LTs.TestUtils.Loggers.DependencyInjection;
 using LTs.Web.Abstractions;
+using LTs.Web.DependencyInjection;
 
-namespace LTs.Web.test;
+namespace LTs.Web.test.DependencyInjection;
 
-public class HttpHandlerRegistrationExtensionsTest : DisposableTest
+public class RegistrationExtensionsTest : BaseTest
 {
     // ReSharper disable once ConvertToPrimaryConstructor
-    public HttpHandlerRegistrationExtensionsTest( ITestOutputHelper testOutput )
+    public RegistrationExtensionsTest( ITestOutputHelper testOutput )
         : base( testOutput ) { }
 
     [ Fact ]

@@ -1,12 +1,12 @@
 ﻿using Autofac;
 using Autofac.Builder;
 
-namespace LTs.DependencyInjections.Extensions;
+namespace LTs.DependencyInjections.DependencyInjection;
 
 /// <summary>
 ///     Extensions to register types with Autofac.
 /// </summary>
-public static class AutofacRegisterExtensions
+public static class RegisterExtensions
 {
     /// <summary>
     ///     Register a generic type with Autofac simplifying the process.

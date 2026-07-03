@@ -4,12 +4,12 @@ using LTs.DependencyInjections.Extensions;
 using Microsoft.Extensions.Configuration;
 using IConfigurationProvider = LTs.Configurations.Abstractions.IConfigurationProvider;
 
-namespace LTs.Configurations.Extensions;
+namespace LTs.Configurations.DependencyInjection;
 
 /// <summary>
 ///     Extensions to register the configuration provider with Autofac.
 /// </summary>
-public static class ConfigurationProviderRegistrationExtensions
+public static class RegistrationExtensions
 {
     /// <summary>
     ///     Registers the Autofac configuration provider and the IConfiguration.
@@ -55,7 +55,7 @@ public static class ConfigurationProviderRegistrationExtensions
         else
         {
             // If it is not an AutofacConfigurationProvider, it will use the action to register the configurations.
-            ArgumentNullException.ThrowIfNull( registerConfigurationsAction, nameof( registerConfigurationsAction ) );
+            ArgumentNullException.ThrowIfNull( registerConfigurationsAction );
             registerConfigurationsAction.Invoke( builder );
         }
 

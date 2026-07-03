@@ -1,13 +1,13 @@
 ﻿using Autofac;
 using LTs.Configurations.Abstractions;
-using LTs.Configurations.Extensions;
+using LTs.Configurations.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using IConfigurationProvider = LTs.Configurations.Abstractions.IConfigurationProvider;
 
-namespace LTs.Configurations.test.Extensions;
+namespace LTs.Configurations.test.DependencyInjection;
 
-public class ConfigurationProviderRegistrationExtensionsTest
+public class RegistrationExtensionsTest
 {
     #region AddConfigurationProvider (with register configuration action)
     [ Fact ]
