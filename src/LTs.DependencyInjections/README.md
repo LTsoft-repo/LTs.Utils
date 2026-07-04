@@ -1,13 +1,13 @@
 # LTs.DependencyInjections
 
 ## Introduction
-Extensions for Autofac to simplify its use.
+Autofac integration helpers for Microsoft dependency injection and keyed services.
 
 This library includes:
 - LTs.DependencyInjections.DependencyInjection
   - AutofacServiceProvider
   - AutofacServiceProviderFactory
+  - RegisterExtensions.RegisterGeneric()
 - LTs.DependencyInjections.Extensions
   - AutofacPopulateExtensions.Populate()
-  - AutofacRegisterExtensions.RegisterGeneric()
   - ServiceProviderExtensions.GetAutofacRoot()
