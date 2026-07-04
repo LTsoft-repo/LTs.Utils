@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
@@ -6,11 +6,11 @@
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
     </PropertyGroup>
-    
+
     <!--Publish Package START-->
     <PropertyGroup>
         <PackageId>LTs.TestUtils</PackageId>
-        <Version>8.0.0-preview1</Version>
+        <Version>10.0.0-preview1</Version>
         <Authors>LTsoft</Authors>
         <Description>LTs.TestUtils</Description>
         <Copyright>Copyright 2026</Copyright>
