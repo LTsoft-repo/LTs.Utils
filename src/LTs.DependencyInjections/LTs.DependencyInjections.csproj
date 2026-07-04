@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -10,7 +10,7 @@
     <!--Publish Package START-->
     <PropertyGroup>
         <PackageId>LTs.DependencyInjections</PackageId>
-        <Version>8.0.0-preview1</Version>
+        <Version>10.0.0-preview1</Version>
         <Authors>LTsoft</Authors>
         <Description>LTs.DependencyInjections</Description>
         <Copyright>Copyright 2026</Copyright>
@@ -29,7 +29,7 @@
     <ItemGroup>
         <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <ProjectReference Include="..\LTs.Utils\LTs.Utils.csproj" />
     </ItemGroup>

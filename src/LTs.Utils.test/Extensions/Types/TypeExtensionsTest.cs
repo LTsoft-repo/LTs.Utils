@@ -56,6 +56,48 @@ public class TypeExtensionsTest
     }
     #endregion
 
+    #region IsCollectionType
+    [ Theory ]
+    [ InlineData( typeof( int[] ) ) ]
+    [ InlineData( typeof( Class1[] ) ) ]
+    [ InlineData( typeof( Record1[] ) ) ]
+    [ InlineData( typeof( IEnumerable<string> ) ) ]
+    [ InlineData( typeof( IEnumerable<Class1> ) ) ]
+    [ InlineData( typeof( IEnumerable<Record1> ) ) ]
+    [ InlineData( typeof( Array ) ) ]
+    [ InlineData( typeof( Dictionary<string, int> ) ) ]
+    [ InlineData( typeof( List<int> ) ) ]
+    public void IsCollectionType_CollectionTypes_ReturnsTrue( Type type )
+    {
+        // Arrange
+
+        // Act
+        var result = type.IsCollectionType();
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [ Theory ]
+    [ InlineData( typeof( string ) ) ]
+    [ InlineData( typeof( int ) ) ]
+    [ InlineData( typeof( double ) ) ]
+    [ InlineData( typeof( bool ) ) ]
+    [ InlineData( typeof( Enum1 ) ) ]
+    [ InlineData( typeof( Class1 ) ) ]
+    [ InlineData( typeof( Record1 ) ) ]
+    public void IsCollectionType_NonCollectionTypes_ReturnsFalse( Type type )
+    {
+        // Arrange
+
+        // Act
+        var result = type.IsCollectionType();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+    #endregion
+
     #region IsAnonymousType
     [ Fact ]
     public void IsAnonymousType_AnonymousType_ReturnsTrue()

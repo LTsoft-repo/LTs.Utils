@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Autofac.Core;
 using JetBrains.Annotations;
 using LTs.Configurations.Configurations;
@@ -88,7 +88,7 @@ public class ScheduleConfigurationRegistrationExtensionsTest
 
         act.Should().Throw<DependencyResolutionException>()
            .WithInnerException<InvalidOperationException>()
-           .WithMessage( "Failed to convert configuration value at 'Schedules:Use1:TimeInMilliseconds' to type 'System.Int32'." );
+           .WithMessage( "Failed to convert configuration value* at 'Schedules:Use1:TimeInMilliseconds' to type 'System.Int32'." );
     }
     #endregion
 
@@ -171,7 +171,7 @@ public class ScheduleConfigurationRegistrationExtensionsTest
 
         act.Should().Throw<DependencyResolutionException>()
            .WithInnerException<InvalidOperationException>()
-           .WithMessage( "Failed to convert configuration value at 'Schedules:Use1:TimeInMilliseconds' to type 'System.Int32'." );
+           .WithMessage( "Failed to convert configuration value* at 'Schedules:Use1:TimeInMilliseconds' to type 'System.Int32'." );
     }
     #endregion
 

@@ -1,13 +1,16 @@
 ﻿using Autofac;
 using LTs.TestUtils.Loggers;
+using LTs.TestUtils.Loggers.DependencyInjection;
 using LTs.TestUtils.Tests;
 using Microsoft.Extensions.Logging;
 
-namespace LTs.TestUtils.test.Loggers;
+#pragma warning disable IDE0290
 
-public class TestLoggerRegistrationExtensionsTest : DisposableTest
+namespace LTs.TestUtils.test.Loggers.DependencyInjection;
+
+public class RegistrationExtensionsTest : BaseTest
 {
-    public TestLoggerRegistrationExtensionsTest( ITestOutputHelper testOutput )
+    public RegistrationExtensionsTest( ITestOutputHelper testOutput )
         : base( testOutput ) { }
 
     #region AddTestLogger

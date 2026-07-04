@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using IdentityModel.Client;
-using LTs.Utils.Extensions.Web;
 using LTs.Web.Abstractions;
 using LTs.Web.Authorization;
+using LTs.Web.Extensions;
 using LTs.Web.Mime;
 using Microsoft.Extensions.Logging;
 

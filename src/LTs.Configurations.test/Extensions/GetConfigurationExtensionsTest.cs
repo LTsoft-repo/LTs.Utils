@@ -87,7 +87,7 @@ public class GetConfigurationExtensionsTest
         act.Should().Throw<ConfigurationException>()
            .WithMessage(
                "Configuration parameter 'key1' is not of type 'RecordA'.\n" +
-               "Exception message: Failed to convert configuration value at 'setting:key1:ValueRecord:ValueEnum' to type 'LTs.Configurations.test.Extensions.GetConfigurationExtensionsTest+Enum1'.\n" +
+               "Exception message: Failed to convert configuration value* at 'setting:key1:ValueRecord:ValueEnum' to type 'LTs.Configurations.test.Extensions.GetConfigurationExtensionsTest+Enum1'.\n" +
                "Section content: \n" +
                "\tsetting:key1:ValueString = some string\r\n" +
                "\tsetting:key1:ValueRecord:ValueString = another string\r\n" +
@@ -305,7 +305,7 @@ public class GetConfigurationExtensionsTest
 
         // Assert
         act.Should().Throw<InvalidOperationException>()
-           .WithMessage( "Failed to convert configuration value at 'setting:key1' to type 'System.Boolean'." );
+           .WithMessage( "Failed to convert configuration value* at 'setting:key1' to type 'System.Boolean'." );
     }
     #endregion
 

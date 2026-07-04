@@ -1,10 +1,14 @@
 ﻿namespace LTs.TestUtils.Tests;
 
 /// <summary>
-///     Base class for tests that need to dispose of resources. It also adds a TestOutput property for writing to the test
-///     output.
+///     Represents a base class for test implementations, providing common functionality
+///     such as managing disposable resources and test output logging.
 /// </summary>
-public abstract class DisposableTest : IDisposable
+/// <remarks>
+///     This class is designed to simplify test development by offering built-in support
+///     for resource cleanup and structured logging during test execution.
+/// </remarks>
+public abstract class BaseTest : IDisposable
 {
     /// <summary>
     ///     Test output helper.
@@ -17,11 +21,11 @@ public abstract class DisposableTest : IDisposable
     protected readonly List<IDisposable> Disposables = [ ];
 
     /// <summary>
-    ///     Creates a new instance of <see cref="DisposableTest" />.
+    ///     Creates a new instance of <see cref="BaseTest" />.
     /// </summary>
     /// <param name="testOutput"></param>
     // ReSharper disable once ConvertToPrimaryConstructor
-    public DisposableTest( ITestOutputHelper testOutput )
+    protected BaseTest( ITestOutputHelper testOutput )
         => TestOutput = testOutput;
 
     /// <inheritdoc />

@@ -1,7 +1,7 @@
 # LTs.Web
 
 ## Introduction
-Set of classes to be used as Http Client, helping to be able to mock it in unit tests.
+Set of HTTP client abstractions, configuration models, MIME helpers, and web extensions.
 
 This library includes:
 - LTs.Web.Abstractions
@@ -15,6 +15,15 @@ This library includes:
 - LTs.Web.Configurations
   - AuthorizationConfiguration
   - AuthorizationConfigurationLoader.LoadAuthorizationConfiguration()
+- LTs.Web.DependencyInjection
+  - RegistrationExtensions.AddHttpHandler()
+- LTs.Web.Extensions
+  - HttpContentExtensions.ReadAsJsonAsync()
+  - HttpContentExtensions.ReadAsJsonAsync&lt;T&gt;()
+  - HttpContentExtensions.ReadFormAsync()
+  - StringWebExtensions.AddQueryString()
+  - StringWebExtensions.CombineUri()
+  - StringWebExtensions.AddQueryStringIfValueNotNull()
 - LTs.Web.Mime
   - MediaType
   - MediaTypeNames
@@ -27,4 +36,3 @@ This library includes:
   - MediaTypeNames.Multiparts
 - LTs.Web
   - HttpHandler
-  - HttpHandlerRegistrationExtensions.AddHttpHandler()

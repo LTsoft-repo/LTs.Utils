@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 
-namespace LTs.Utils.Extensions.Web;
+namespace LTs.Web.Extensions;
 
 /// <summary>
 ///     Extensions for web-related strings.

@@ -2,7 +2,7 @@
 using System.Net;
 using Newtonsoft.Json;
 
-namespace LTs.Utils.Extensions.Web;
+namespace LTs.Web.Extensions;
 
 /// <summary>
 ///     Extensions for <see cref="HttpContent" />.
@@ -47,7 +47,7 @@ public static class HttpContentExtensions
     /// <returns>A dictionary containing the form fields.</returns>
     public static async Task<IImmutableDictionary<string, string>> ReadFormAsync( this HttpContent? content )
     {
-        ArgumentNullException.ThrowIfNull( content, nameof( content ) );
+        ArgumentNullException.ThrowIfNull( content );
 
         var formFields = new Dictionary<string, string>();
 

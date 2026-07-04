@@ -1,12 +1,12 @@
 ﻿using Autofac;
 using LTs.Web.Abstractions;
 
-namespace LTs.Web;
+namespace LTs.Web.DependencyInjection;
 
 /// <summary>
 ///     Extension methods for registering the HTTP handler services and dependencies.
 /// </summary>
-public static class HttpHandlerRegistrationExtensions
+public static class RegistrationExtensions
 {
     /// <summary>
     ///     Register the HTTP handler services and dependencies.

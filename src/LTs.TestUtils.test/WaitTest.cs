@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace LTs.TestUtils.test;
 
-public class WaitTest : DisposableTest
+public class WaitTest : BaseTest
 {
     public WaitTest( ITestOutputHelper testOutput )
         : base( testOutput ) { }

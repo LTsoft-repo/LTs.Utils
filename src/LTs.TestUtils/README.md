@@ -1,7 +1,7 @@
 # LTs.TestUtils
 
 ## Introduction
-Set of classes and extensions to create tests.
+Set of classes, assertions, loggers, and web helpers for tests.
 
 This library includes:
 - LTs.TestUtils.Configurations
@@ -17,15 +17,17 @@ This library includes:
   - JsonAssertionsExtensions.BeSameJsonAs()
   - JsonAssertionsExtensions.NotBeSameJsonAs()
   - JsonAssertionsExtensions.BeSameJsonIgnoringExtraFieldsAs()
+- LTs.TestUtils.Loggers.DependencyInjection
+  - RegistrationExtensions.AddTestLogger()
 - LTs.TestUtils.Loggers
   - InMemoryLogger
   - InMemoryLogger&lt;T&gt;
   - LoggerMessage
   - TestLogger
   - TestLogger&lt;T&gt;
-  - TestLoggerRegistrationExtensions.AddTestLogger()
+  - TestLoggerProvider
 - LTs.TestUtils.Tests
-  - DisposableTest
+  - BaseTest
 - LTs.TestUtils.Web
   - MockHttpClientExtensions.ShouldBeEquivalentTo()
   - MockHttpClientFactory.CreateForGet()
@@ -35,8 +37,6 @@ This library includes:
   - MockHttpHandlerFactoryEchoResponseContent
 - LTs.TestUtils
   - DiagnosticMessage
-  - LoggerMessage
-  - TestLoggerProvider
   - TestUtility.GetTestConfiguration()
   - TestUtility.AddTestSettings()
   - TestUtility.RetryAsync()

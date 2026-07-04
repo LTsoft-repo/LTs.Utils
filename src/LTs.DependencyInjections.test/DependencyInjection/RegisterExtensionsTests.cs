@@ -1,10 +1,10 @@
 ﻿using Autofac;
-using LTs.DependencyInjections.Extensions;
+using LTs.DependencyInjections.DependencyInjection;
 using LTs.DependencyInjections.test.Infrastructure;
 
-namespace LTs.DependencyInjections.test.Extensions;
+namespace LTs.DependencyInjections.test.DependencyInjection;
 
-public class AutofacRegisterExtensionsTests
+public class RegisterExtensionsTests
 {
     #region RegisterGeneric
     [ Fact ]

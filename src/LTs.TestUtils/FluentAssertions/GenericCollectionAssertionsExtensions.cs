@@ -133,8 +133,8 @@ public static class GenericCollectionAssertionsExtensions
         where TCollection : IEnumerable<T>
         where TAssertions : GenericCollectionAssertions<TCollection, T, TAssertions>
     {
-        ArgumentNullException.ThrowIfNull( config, nameof( config ) );
-        ArgumentNullException.ThrowIfNull( expectation, nameof( expectation ) );
+        ArgumentNullException.ThrowIfNull( config );
+        ArgumentNullException.ThrowIfNull( expectation );
 
         var expectationArray = expectation.ToArray();
 
@@ -155,7 +155,7 @@ public static class GenericCollectionAssertionsExtensions
         var options = config( AssertionOptions.CloneDefaults<TExpectation>() );
 
         var scope = new AssertionScope();
-        scope.AddReportable( "configuration", () => options.ToString() );
+        scope.AddReportable( "configuration", options.ToString );
 
         var assertionResult = assertions.Subject!.ValidateValues( expectationArray, config );
 
@@ -169,7 +169,7 @@ public static class GenericCollectionAssertionsExtensions
         scope.Dispose();
 
         // Return success with a default item since this method is about checking presence
-        return new( (TAssertions)assertions );
+        return new AndConstraint<TAssertions>( (TAssertions)assertions );
     }
     #endregion
 
@@ -294,9 +294,9 @@ public static class GenericCollectionAssertionsExtensions
         where TAssertions : GenericCollectionAssertions<TCollection, IGrouping<TKey, TElement>, TAssertions>
         where TExpectation : IGrouping<TKey, TElement>
     {
-        ArgumentNullException.ThrowIfNull( configKey, nameof( configKey ) );
-        ArgumentNullException.ThrowIfNull( configElement, nameof( configElement ) );
-        ArgumentNullException.ThrowIfNull( expectation, nameof( expectation ) );
+        ArgumentNullException.ThrowIfNull( configKey );
+        ArgumentNullException.ThrowIfNull( configElement );
+        ArgumentNullException.ThrowIfNull( expectation );
 
         var expectationArray = expectation.ToArray();
 
@@ -320,7 +320,7 @@ public static class GenericCollectionAssertionsExtensions
         assertions.Subject!.ValidateGroupingValues( expectationArray, configKey, configElement );
 
         // Return success with a default item since this method is about checking presence
-        return new( (TAssertions)assertions );
+        return new AndConstraint<TAssertions>( (TAssertions)assertions );
     }
     #endregion
 
@@ -425,8 +425,8 @@ public static class GenericCollectionAssertionsExtensions
         where TCollection : IEnumerable<T>
         where TAssertions : GenericCollectionAssertions<TCollection, T, TAssertions>
     {
-        ArgumentNullException.ThrowIfNull( config, nameof( config ) );
-        ArgumentNullException.ThrowIfNull( expectation, nameof( expectation ) );
+        ArgumentNullException.ThrowIfNull( config );
+        ArgumentNullException.ThrowIfNull( expectation );
 
         // Ensure subject is not null
         Execute.Assertion
@@ -438,7 +438,7 @@ public static class GenericCollectionAssertionsExtensions
         var options = config( AssertionOptions.CloneDefaults<TExpectation>() );
 
         var scope = new AssertionScope();
-        scope.AddReportable( "configuration", () => options.ToString() );
+        scope.AddReportable( "configuration", options.ToString );
 
         foreach( var expectedItem in expectation )
         {
@@ -449,7 +449,7 @@ public static class GenericCollectionAssertionsExtensions
                 var context =
                     new EquivalencyValidationContext( Node.From<TExpectation>( () => AssertionScope.Current.CallerIdentity ), options )
                     {
-                        Reason = new( because, becauseArgs ),
+                        Reason = new Reason( because, becauseArgs ),
                         TraceWriter = options.TraceWriter
                     };
 
@@ -485,7 +485,7 @@ public static class GenericCollectionAssertionsExtensions
 
         scope.Dispose();
 
-        return new( (TAssertions)assertions );
+        return new AndConstraint<TAssertions>( (TAssertions)assertions );
     }
     #endregion
 
@@ -593,8 +593,8 @@ public static class GenericCollectionAssertionsExtensions
         where TCollection : IEnumerable<T>
         where TAssertions : GenericCollectionAssertions<TCollection, T, TAssertions>
     {
-        ArgumentNullException.ThrowIfNull( expectation, nameof( expectation ) );
-        ArgumentNullException.ThrowIfNull( config, nameof( config ) );
+        ArgumentNullException.ThrowIfNull( expectation );
+        ArgumentNullException.ThrowIfNull( config );
 
         // collect arrays
         var expectedArray = expectation.ToArray();
@@ -614,14 +614,14 @@ public static class GenericCollectionAssertionsExtensions
                    .ForCondition( !subjectArray.Any() )
                    .FailWith( "Expected {context:collection} to be empty{reason}, but found {0}.", subjectArray );
 
-            return new( (TAssertions)assertions );
+            return new AndConstraint<TAssertions>( (TAssertions)assertions );
         }
 
         // clone options
         var options = config( AssertionOptions.CloneDefaults<T>() );
 
         using var scope = new AssertionScope();
-        scope.AddReportable( "configuration", () => options.ToString() );
+        scope.AddReportable( "configuration", options.ToString );
 
         // 1) every expected has a match in subject
         var missingInSubject = subjectArray.ValidateValues( expectedArray, _ => options );
@@ -645,7 +645,7 @@ public static class GenericCollectionAssertionsExtensions
                 extrasInSubject.FailedExpectation );
         }
 
-        return new( (TAssertions)assertions );
+        return new AndConstraint<TAssertions>( (TAssertions)assertions );
     }
     #endregion
 
@@ -662,7 +662,7 @@ public static class GenericCollectionAssertionsExtensions
         IEnumerable<TExpectation> expectation,
         Func<EquivalencyAssertionOptions<TExpectation>, EquivalencyAssertionOptions<TExpectation>> config )
     {
-        ArgumentNullException.ThrowIfNull( subject, nameof( subject ) );
+        ArgumentNullException.ThrowIfNull( subject );
 
         var subjectArray = subject.ToArray();
 
@@ -820,7 +820,7 @@ public static class GenericCollectionAssertionsExtensions
                 return wasFound;
             } );
 
-        return new()
+        return new FirstEquivalentResult<T?>
         {
             WasFound = wasFound,
             Item = item

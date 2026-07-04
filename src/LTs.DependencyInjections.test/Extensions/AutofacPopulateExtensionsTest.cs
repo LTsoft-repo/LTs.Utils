@@ -1,6 +1,6 @@
 ﻿using Autofac;
-using JetBrains.Annotations;
 using LTs.DependencyInjections.Extensions;
+using LTs.DependencyInjections.test.Infrastructure;
 
 namespace LTs.DependencyInjections.test.Extensions;
 
@@ -42,8 +42,4 @@ public class AutofacPopulateExtensionsTest
         act.Should().NotThrow();
     }
     #endregion
-
-    [ UsedImplicitly ]
-    // ReSharper disable once RedundantTypeDeclarationBody
-    private class SomeClass { }
 }

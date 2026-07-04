@@ -17,8 +17,8 @@ public static class ReflectionExtensions
     /// <exception cref="MissingFieldException"></exception>
     public static T? GetFieldValue<T>( this object obj, string fieldName )
     {
-        ArgumentNullException.ThrowIfNull( obj, nameof( obj ) );
-        ArgumentNullException.ThrowIfNull( fieldName, nameof( fieldName ) );
+        ArgumentNullException.ThrowIfNull( obj );
+        ArgumentNullException.ThrowIfNull( fieldName );
 
         var field = obj.GetField( fieldName );
 
@@ -39,8 +39,8 @@ public static class ReflectionExtensions
     /// <returns>The value of the property.</returns>
     public static T? GetPropertyValue<T>( this object obj, string propertyName )
     {
-        ArgumentNullException.ThrowIfNull( obj, nameof( obj ) );
-        ArgumentNullException.ThrowIfNull( propertyName, nameof( propertyName ) );
+        ArgumentNullException.ThrowIfNull( obj );
+        ArgumentNullException.ThrowIfNull( propertyName );
 
         var property = obj.GetPropertyEvenPrivate( propertyName );
 
@@ -61,8 +61,8 @@ public static class ReflectionExtensions
     /// <returns>The value of the field/property.</returns>
     public static T? GetDataMemberValue<T>( this object obj, string dataMemberName )
     {
-        ArgumentNullException.ThrowIfNull( obj, nameof( obj ) );
-        ArgumentNullException.ThrowIfNull( dataMemberName, nameof( dataMemberName ) );
+        ArgumentNullException.ThrowIfNull( obj );
+        ArgumentNullException.ThrowIfNull( dataMemberName );
 
         var property = obj.GetPropertyEvenPrivate( dataMemberName );
 

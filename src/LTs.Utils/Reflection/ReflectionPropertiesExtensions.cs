@@ -19,8 +19,8 @@ public static class ReflectionPropertiesExtensions
                                            object source,
                                            string[] ignoredSourceProperties )
     {
-        ArgumentNullException.ThrowIfNull( destination, nameof( destination ) );
-        ArgumentNullException.ThrowIfNull( source, nameof( source ) );
+        ArgumentNullException.ThrowIfNull( destination );
+        ArgumentNullException.ThrowIfNull( source );
 
         foreach( var entityProp in source.GetType().GetProperties( BindingFlags.Public | BindingFlags.Instance ) )
         {
@@ -49,7 +49,7 @@ public static class ReflectionPropertiesExtensions
     /// <returns></returns>
     public static PropertyInfo? GetProperty( this object obj, string propertyName )
     {
-        ArgumentNullException.ThrowIfNull( obj, nameof( obj ) );
+        ArgumentNullException.ThrowIfNull( obj );
 
         return obj.GetType().GetProperty( propertyName, BindingFlags.Public | BindingFlags.Instance );
     }
@@ -66,7 +66,7 @@ public static class ReflectionPropertiesExtensions
     /// </returns>
     public static bool SetProperty( this object obj, string propertyName, object? value )
     {
-        ArgumentNullException.ThrowIfNull( obj, nameof( obj ) );
+        ArgumentNullException.ThrowIfNull( obj );
 
         var prop = obj.GetProperty( propertyName );
 

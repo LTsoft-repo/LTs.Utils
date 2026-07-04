@@ -1,7 +1,7 @@
 # LTs.Utils
 
 ## Introduction
-Set of general classes and extensions.
+Set of general classes, helpers, and extensions.
 
 This library includes:
 - LTs.Utils.Applications.Abstractions
@@ -23,13 +23,13 @@ This library includes:
   - DateTimeExtensions.ParseAsDateTimeOffset()
   - DateTimeExtensions.ParseAsDateTime()
 - LTs.Utils.Extensions.Enumerables
-    - AsyncEnumerableExtensions.ToEnumerableAsync()
+  - AsyncEnumerableExtensions.ToEnumerableAsync()
 - LTs.Utils.Extensions.Exceptions
   - ArgumentExceptionErrorType
   - ArgumentExceptionExtensions.GetInformation()
   - ArgumentExceptionInformation
-  - ExceptionExtensions.ThrowIfFalse()
-  - ExceptionExtensions.ThrowIfTrue()
+  - ExceptionsExtensions.ThrowIfFalse()
+  - ExceptionsExtensions.ThrowIfTrue()
 - LTs.Utils.Extensions.Strings
   - StringGeneralExtensions.TrimEnd()
   - StringGeneralExtensions.LowercaseFirst()
@@ -40,15 +40,9 @@ This library includes:
   - StringGeneralExtensions.Split()
 - LTs.Utils.Extensions.Types
   - TypeExtensions.IsBasicType()
+  - TypeExtensions.IsCollectionType()
   - TypeExtensions.IsAnonymousType()
   - TypeExtensions.IsDefault()
-- LTs.Utils.Extensions.Web
-  - HttpContentExtensions.ReadAsJsonAsync()
-  - HttpContentExtensions.ReadAsJsonAsync&lt;T&gt;()
-  - HttpContentExtensions.ReadFormAsync()
-  - StringWebExtensions.AddQueryString()
-  - StringWebExtensions.CombineUri()
-  - StringWebExtensions.AddQueryStringIfValueNotNull()
 - LTs.Utils.Reflection
   - ReflectionAttributeExtensions.HasAttribute&lt;T&gt;()
   - ReflectionAttributeExtensions.HasAttribute()
@@ -58,6 +52,7 @@ This library includes:
   - ReflectionExtensions.GetPropertyValue&lt;T&gt;()
   - ReflectionExtensions.GetDataMemberValue&lt;T&gt;()
   - ReflectionHelper.CreateInstance&lt;T&gt;()
+  - ReflectionHelper.CreateInstance&lt;T&gt;( params object[] )
   - ReflectionPropertiesExtensions.CopyPropertiesFrom()
   - ReflectionPropertiesExtensions.GetProperty()
   - ReflectionPropertiesExtensions.SetProperty()

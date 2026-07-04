@@ -11,7 +11,7 @@ using LTs.Web.test.Infrastructure;
 
 namespace LTs.Web.test;
 
-public class HttpHandlerTest : DisposableTest
+public class HttpHandlerTest : BaseTest
 {
     public HttpHandlerTest( ITestOutputHelper testOutput )
         : base( testOutput ) { }
