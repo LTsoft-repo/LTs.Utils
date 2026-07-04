@@ -29,6 +29,15 @@ public static class TypeExtensions
                                                         type.IsEnum;
 
     /// <summary>
+    ///     Check if the type is a Collection Type.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns><c>true</c> if the type is a Collection Type; otherwise, <c>false</c>.</returns>
+    public static bool IsCollectionType( this Type type )
+        => type != typeof( string ) &&
+           typeof( System.Collections.IEnumerable ).IsAssignableFrom( type );
+
+    /// <summary>
     ///     Check if the type is an Anonymous Type.
     /// </summary>
     /// <param name="type">The type to check.</param>

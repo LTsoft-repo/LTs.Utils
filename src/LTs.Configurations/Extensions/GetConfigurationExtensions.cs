@@ -45,6 +45,13 @@ public static class GetConfigurationExtensions
         {
             try
             {
+                if( typeof( T ).IsCollectionType()
+                    && section.Value is not null
+                    && !section.GetChildren().Any() )
+                {
+                    throw new ConfigurationException( $"Can not convert to type '{typeof( T ).Name}'" );
+                }
+
                 result = section.Get<T>();
 
                 if( result.IsDefault() )

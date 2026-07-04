@@ -285,13 +285,8 @@ public class GetConfigurationExtensionsTest
         var act = () => section.GetRequiredValue<string[]>( "key1" );
 
         // Assert
-#if NET10_0_OR_GREATER
-        act.Should().NotThrow()
-           .Which.Should().BeEmpty();
-#else
         act.Should().Throw<ConfigurationException>()
            .WithMessage( "Configuration parameter 'key1' is not of type 'String[]'*" );
-#endif
     }
 
     [ Fact ]
