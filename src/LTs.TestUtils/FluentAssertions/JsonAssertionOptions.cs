@@ -1,6 +1,13 @@
 ﻿namespace LTs.TestUtils.FluentAssertions;
 
 /// <summary>
+///     JSON path matcher for JSON equivalencies.
+/// </summary>
+/// <param name="JsonPath">JSON path to match.</param>
+/// <param name="Match">Matcher to execute for the selected JSON value.</param>
+public sealed record JsonAssertionMatcher( string JsonPath, Action<string?> Match );
+
+/// <summary>
 ///     Options for JSON equivalencies.
 /// </summary>
 public sealed record JsonAssertionOptions
@@ -21,6 +28,11 @@ public sealed record JsonAssertionOptions
     public bool IgnoreExtraFields { get; init; }
 
     /// <summary>
+    ///     JSON path matchers to validate from the subject JSON.
+    /// </summary>
+    public IEnumerable<JsonAssertionMatcher> Matchers { get; init; } = [ ];
+
+    /// <summary>
     ///     Excludes a JSON path from the comparison.
     /// </summary>
     /// <param name="jsonPath">JSON path to exclude.</param>
@@ -39,5 +51,17 @@ public sealed record JsonAssertionOptions
         => this with
         {
             IgnoreExtraFields = true
+        };
+
+    /// <summary>
+    ///     Adds a matcher for a JSON path.
+    /// </summary>
+    /// <param name="jsonPath">JSON path to match.</param>
+    /// <param name="match">Matcher to execute for the selected JSON value.</param>
+    /// <returns>The JSON assertion options.</returns>
+    public JsonAssertionOptions WithMatcher( string jsonPath, Action<string?> match )
+        => this with
+        {
+            Matchers = Matchers.Append( new JsonAssertionMatcher( jsonPath, match ) ).ToArray()
         };
 }

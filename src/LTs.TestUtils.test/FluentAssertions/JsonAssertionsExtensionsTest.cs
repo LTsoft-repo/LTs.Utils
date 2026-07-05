@@ -127,12 +127,12 @@ public class JsonAssertionsExtensionsTest : BaseTest
         var act = () => json.Should().BeSameJsonAs( expectedJson );
 
         // Assert
-        var exception = act.Should().ThrowExactly<XunitException>().Which;
-
-        exception.Message.Should().Contain( "JSON document has 3 mismatches:" )
-                 .And.Contain( "JSON document has a different value at $.name." )
-                 .And.Contain( "JSON document has a different value at $.age." )
-                 .And.Contain( "JSON document has a different value at $.address.city." );
+        act.Should().ThrowExactly<XunitException>()
+           .Which
+           .Message.Should().Contain( "JSON document has 3 mismatches:" )
+           .And.Contain( "JSON document has a different value at $.name." )
+           .And.Contain( "JSON document has a different value at $.age." )
+           .And.Contain( "JSON document has a different value at $.address.city." );
     }
 
     [ Fact ]
@@ -259,6 +259,125 @@ public class JsonAssertionsExtensionsTest : BaseTest
                                                                       .Exclude( "id" )
                                                                       .Exclude( "metadata.version" )
                                                                       .Exclude( "values[*].id" ) );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_FluentOptionsWithMatcher_Successes()
+    {
+        // Arrange
+        var json = """{ "field1": "actual value", "name": "John" }""";
+        var expectedJson = """{ "field1": "actual value", "name": "John" }""";
+
+        // Act
+        var act = () => json.Should().BeSameJsonAs( expectedJson,
+                                                    options => options.WithMatcher( "field1",
+                                                                                    value => value.Should().Contain( "value" ) ) );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_FluentOptionsWithMatcherWildcard_Successes()
+    {
+        // Arrange
+        var json = """{ "values": [ { "id": "value-1" }, { "id": "value-2" } ] }""";
+        var expectedJson = """{ "values": [ { "id": "some-value-3" }, { "id": "some-value-4" } ] }""";
+
+        // Act
+        var act = () => json.Should().BeSameJsonAs( expectedJson,
+                                                    options => options.WithMatcher( "values[*].id",
+                                                                                    value => value.Should().Contain( "value" ) ) );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_FluentOptionsWithMatcherWildcard_ThrowsMatcherMismatches()
+    {
+        // Arrange
+        var json = """{ "values": [ { "id": "value-1" }, { "id": "value-2" } ] }""";
+        var expectedJson = """{ "values": [ { "id": "expected-1" }, { "id": "expected-2" } ] }""";
+
+        // Act
+        var act = () => json.Should().BeSameJsonAs( expectedJson,
+                                                    options => options.WithMatcher( "values[*].id",
+                                                                                    value => value.Should().Contain( "value" ) ) );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .Which
+           .Message.Should().Contain( "JSON document has 2 mismatches:" )
+           .And.Contain( "JSON document expectation matcher failed at $.values[0].id." )
+           .And.Contain( "JSON document expectation matcher failed at $.values[1].id." );
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_FluentOptionsWithMatcher_ThrowsMatcherMismatch()
+    {
+        // Arrange
+        var json = """{ "field1": "actual value", "name": "John" }""";
+        var expectedJson = """{ "field1": "actual text", "name": "Jane" }""";
+
+        // Act
+        var act = () => json.Should().BeSameJsonAs( expectedJson,
+                                                    options => options.WithMatcher( "field1",
+                                                                                    value => value.Should().Contain( "value" ) ) );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .Which
+           .Message.Should().Contain( "JSON document has 2 mismatches:" )
+           .And.Contain( "JSON document has a different value at $.name." )
+           .And.Contain( "JSON document expectation matcher failed at $.field1." )
+           .And.Contain( "to contain \"value\"" );
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_FluentOptionsIgnoringExtraFieldsExclusionsAndMatcher_Successes()
+    {
+        // Arrange
+        var json = """
+                   {
+                     "id": "1",
+                     "metadata": {
+                       "version": "2"
+                     },
+                     "values": [
+                       { "id": "1", "value": "A" },
+                       { "id": "2", "value": "B" }
+                     ],
+                     "field1": "actual value",
+                     "extra": "ignored"
+                   }
+                   """;
+
+        var expectedJson = """
+                           {
+                             "id": "2",
+                             "metadata": {
+                               "version": "3"
+                             },
+                             "values": [
+                               { "id": "3", "value": "A" },
+                               { "id": "4", "value": "B" }
+                             ],
+                             "field1": "actual value 2"
+                           }
+                           """;
+
+        // Act
+        var act = () => json.Should().BeSameJsonAs( expectedJson,
+                                                    options => options.IgnoringExtraFields()
+                                                                      .Exclude( "id" )
+                                                                      .Exclude( "metadata.version" )
+                                                                      .Exclude( "values[*].id" )
+                                                                      .WithMatcher( "field1",
+                                                                                    value => value.Should().Contain( "value" ) ) );
 
         // Assert
         act.Should().NotThrow();

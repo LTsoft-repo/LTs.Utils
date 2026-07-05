@@ -269,10 +269,13 @@ public static class JsonAssertionsExtensions
         string because = "",
         params object[] becauseArgs )
     {
-        var excludedPaths = options.ExcludedJsonPaths.ToArray();
+        var excludedPaths = options.ExcludedJsonPaths.Concat( options.Matchers.Select( x => x.JsonPath ) ).ToArray();
         var subject = assertions.Subject.RemoveExcludedJsonPaths( excludedPaths );
         var expected = expectation.RemoveExcludedJsonPaths( excludedPaths );
-        var differences = GetJsonDifferences( subject, expected, options ).ToArray();
+
+        var differences = GetJsonDifferences( subject, expected, options )
+                          .Concat( GetMatcherDifferences( assertions.Subject, expectation, options.Matchers ) )
+                          .ToArray();
 
         Execute.Assertion
                .BecauseOf( because, becauseArgs )
@@ -637,6 +640,75 @@ public static class JsonAssertionsExtensions
 
     private static string FormatJsonValue( JToken token )
         => token.ToString( Formatting.None );
+
+    private static IEnumerable<string> GetMatcherDifferences( JToken subject,
+                                                              JToken expectation,
+                                                              IEnumerable<JsonAssertionMatcher> matchers )
+    {
+        foreach( var matcher in matchers )
+        {
+            foreach( var difference in GetMatcherDifferences( subject, matcher, "subject" ) )
+            {
+                yield return difference;
+            }
+
+            foreach( var difference in GetMatcherDifferences( expectation, matcher, "expectation" ) )
+            {
+                yield return difference;
+            }
+        }
+    }
+
+    private static IEnumerable<string> GetMatcherDifferences( JToken token, JsonAssertionMatcher matcher, string documentName )
+    {
+        var selectedTokens = token.SelectTokens( NormalizeJsonPath( matcher.JsonPath ) ).ToArray();
+
+        if( selectedTokens.Length == 0 )
+        {
+            yield return $"JSON document {documentName} misses matcher path {NormalizeJsonPath( matcher.JsonPath )}.";
+
+            yield break;
+        }
+
+        foreach( var selectedToken in selectedTokens )
+        {
+            var selectedPath = FormatJsonPath( selectedToken );
+            string? matcherFailure = null;
+
+            try
+            {
+                matcher.Match( FormatMatcherValue( selectedToken ) );
+            }
+            catch( Exception exception )
+            {
+                matcherFailure = $"JSON document {documentName} matcher failed at {selectedPath}. {exception.Message}";
+            }
+
+            if( matcherFailure is not null )
+            {
+                yield return matcherFailure;
+            }
+        }
+    }
+
+    private static string FormatJsonPath( JToken token )
+    {
+        if( string.IsNullOrWhiteSpace( token.Path ) )
+        {
+            return "$";
+        }
+
+        return token.Path.StartsWith( "[", StringComparison.Ordinal )
+                   ? $"${token.Path}"
+                   : $"$.{token.Path}";
+    }
+
+    private static string? FormatMatcherValue( JToken token )
+        => token.Type == JTokenType.Null
+               ? null
+               : token.Type == JTokenType.String
+                   ? token.Value<string>()
+                   : token.ToString( Formatting.None );
 
     private static string GetFailureMessage( IReadOnlyCollection<string> differences )
         => differences.Count == 1
