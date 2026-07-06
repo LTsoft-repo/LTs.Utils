@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{55F890B2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LTs.Web.test", "LTs.Web.test\LTs.Web.test.csproj", "{1F8BA13B-D417-42ED-9C89-E7878A37CBD2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configuration", "Configuration", "{D601D0BA-127D-4539-A980-4FE32F71744F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{D601D0BA-127D-4539-A980-4FE32F71744F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{DA3BB7F6-C07C-4901-8D88-6FBE23F6A923}"
 EndProject
@@ -41,7 +41,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LTs.Configurations", "LTs.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LTs.Configurations.test", "LTs.Configurations.test\LTs.Configurations.test.csproj", "{2F560DF0-DF2D-4F9E-951E-F36C04B344D4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DependencyInjection", "DependencyInjection", "{843F15D3-5405-434C-A30D-77278C5014FC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DependencyInjections", "DependencyInjections", "{843F15D3-5405-434C-A30D-77278C5014FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E6CA22EB-515D-48D3-A3C6-4EC2EBBA08FA}"
 EndProject
