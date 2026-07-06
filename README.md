@@ -13,5 +13,5 @@ Set of utility classes and functions used across LTsoft projects.
 
 
 ## Change logs
-- [v10.0.0](ReleaseNotes/v10.0.0.md) - 2026-07-04: Add .NET 10 support and namespace cleanup.
+- [v8.0.0](ReleaseNotes/v8.0.0.md) - 2026-02-12: Initial version.- [v8.0.0](ReleaseNotes/v8.0.0.md) - 2026-02-12: Initial version.- [v10.0.0](ReleaseNotes/v10.0.0.md) - 2026-07-05: Add .NET 10 support and other changes.
 - [v8.0.0](ReleaseNotes/v8.0.0.md) - 2026-02-12: Initial version.
