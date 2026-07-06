@@ -338,6 +338,50 @@ public class JsonAssertionsExtensionsTest : BaseTest
     }
 
     [ Fact ]
+    public void BeSameJsonAs_FluentOptionsExclusionsFieldAndMatcherWithExcludedField_Successes()
+    {
+        // Arrange
+        var json = """
+                   {
+                     "id": "1",
+                     "metadata": {
+                       "version": "2"
+                     },
+                     "values": [
+                       { "id": "1", "value": "A" },
+                       { "id": "2", "value": "B" }
+                     ],
+                     "field1": "actual value"
+                   }
+                   """;
+
+        var expectedJson = """
+                           {
+                             "id": "2",
+                             "metadata": {
+                               "version": "3"
+                             },
+                             "values": [
+                               { "id": "3", "value": "A, A1, A2" },
+                               { "id": "4", "value": "B" }
+                             ],
+                             "field1": "actual value"
+                           }
+                           """;
+
+        // Act
+        var act = () => json.Should().BeSameJsonAs( expectedJson,
+                                                    options => options.Exclude( "id" )
+                                                                      .Exclude( "metadata.version" )
+                                                                      .Exclude( "values" )
+                                                                      .WithMatcher( "values[0].value",
+                                                                                    value => value.Should().Contain( "A" ) ) );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
     public void BeSameJsonAs_FluentOptionsIgnoringExtraFieldsExclusionsAndMatcher_Successes()
     {
         // Arrange
