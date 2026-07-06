@@ -4,10 +4,9 @@
 Set of JSON helpers and extensions.
 
 This library includes:
-- LTs.Json
+- LTs.Json.Extensions
   - JsonDateParseType
   - JsonParseOptions
   - JsonStringOptions
-- LTs.Json.Extensions
   - StringDeserializeExtensions.ParseAsJToken()
   - JTokenSerializeExtensions.ToJson()
