@@ -10,7 +10,7 @@
     <!--Publish Package START-->
     <PropertyGroup>
         <PackageId>LTs.Hosting</PackageId>
-        <Version>10.0.0-preview2</Version>
+        <Version>10.0.0-preview3</Version>
         <Authors>LTsoft</Authors>
         <Description>LTs.Hosting</Description>
         <Copyright>Copyright 2026</Copyright>
