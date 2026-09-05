@@ -8,6 +8,9 @@ This library includes:
   - IAutofacConfigurationProvider
   - IConfigurationProvider
 - LTs.Configurations.Configurations
+  - AppConfigConfiguration
+  - AppConfigConfigurationLoader.LoadAppConfigConfiguration()
+  - AppConfigConfigurationLoader.AddAppConfigConfigurationLoader()
   - ScheduleConfiguration
   - ScheduleConfiguration&lt;T&gt;
   - ScheduleConfigurationLoader.LoadScheduleConfiguration()
@@ -23,6 +26,7 @@ This library includes:
   - ConfigurationException.ThrowIfNullOrWhiteSpace()
 - LTs.Configurations.Extensions
   - ConfigurationBuilderEmptyStringExtensions.ParseEmptyString()
+  - ConfigurationBuilderExtensions.AddJsonString()
   - GetConfigurationExtensions.GetRequiredValue&lt;T&gt;()
   - GetConfigurationExtensions.GetRequiredConnectionString()
   - GetConfigurationExtensions.GetSectionPath()
