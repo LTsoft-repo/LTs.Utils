@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\LTs.Configurations\LTs.Configurations.csproj" />
         <ProjectReference Include="..\LTs.TestUtils\LTs.TestUtils.csproj" />
     </ItemGroup>
 

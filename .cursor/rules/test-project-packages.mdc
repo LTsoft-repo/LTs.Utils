@@ -1,0 +1,28 @@
+---
+description: Prevent duplicate package references in test projects.
+globs: **/*.test.csproj,**/*.test.integration.csproj
+alwaysApply: false
+---
+
+# Test Project Package References
+
+Do not duplicate production `<PackageReference>` entries in test projects.
+
+## Rules
+
+- Test projects get production dependencies through `<ProjectReference>` only.
+- Allowed test-only packages: `LTs.TestUtils`, `xunit`, `xunit.runner.visualstudio`, `Moq`, `coverlet.collector`, `Microsoft.NET.Test.Sdk`.
+- Never add a package to a test project because the project under test already references it (for example `LTs.Utils`, `LTs.Json`, `Autofac`).
+- If a test needs container or composition behavior, add or use a public API on the production project (for example `SoongSkillsComposition.ResolveDefaultTools()`) instead of referencing the container package in the test project.
+
+## Example
+
+```xml
+<!-- BAD: duplicates LTs.Utils from LTs.Soong.Skills -->
+<PackageReference Include="LTs.Utils" Version="10.0.0-preview2" />
+<ProjectReference Include="..\LTs.Soong.Skills\LTs.Soong.Skills.csproj" />
+
+<!-- GOOD -->
+<PackageReference Include="LTs.TestUtils" Version="10.0.0-preview2" />
+<ProjectReference Include="..\LTs.Soong.Skills\LTs.Soong.Skills.csproj" />
+```

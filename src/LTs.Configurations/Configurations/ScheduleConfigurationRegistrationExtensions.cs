@@ -29,7 +29,6 @@ public static class ScheduleConfigurationRegistrationExtensions
     /// <summary>
     ///     Registers the <see cref="ScheduleConfiguration{T}" /> loaded from <see cref="IConfiguration" />.
     /// </summary>
-    /// r
     /// <typeparam name="T">Type the Schedule Configuration is for.</typeparam>
     /// <param name="builder">ContainerBuilder to register the services.</param>
     /// <param name="sectionName">Name of the section in the configuration.</param>
