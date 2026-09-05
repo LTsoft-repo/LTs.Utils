@@ -41,6 +41,13 @@ These rules apply to the entire repository.
 - Within each member group, order by accessibility: public, protected, private.
 - Do not add nested classes or records unless explicitly requested. When nested types are required, place them after all other members and order them public, protected, private.
 
+## Entry Points
+
+- Never use top-level statements for APIs, Function Apps, console apps, workers, or any executable entry point.
+- Always use an explicit `Program` class with a `Main` method.
+- Put startup in `Program.Main`, extracting setup into `private static` methods on `Program` when needed.
+- Do not delegate `Main` to a separate application startup class.
+
 ## Code Design
 
 - Any code must follow SOLID principles.
