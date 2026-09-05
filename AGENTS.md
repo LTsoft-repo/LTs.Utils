@@ -45,6 +45,8 @@ These rules apply to the entire repository.
 
 - Never use top-level statements for APIs, Function Apps, console apps, workers, or any executable entry point.
 - Always use an explicit `Program` class with a `Main` method.
+- Follow `.cursor/rules/host-composition.mdc` for host bootstrap, configuration, and Autofac registration.
+- Follow `.cursor/rules/configuration.mdc` for typed configuration records, loaders, and appsettings conventions.
 - Put startup in `Program.Main`, extracting setup into `private static` methods on `Program` when needed.
 - Do not delegate `Main` to a separate application startup class.
 
@@ -100,6 +102,8 @@ These rules apply to the entire repository.
 - Do not use `BeEquivalentTo` on collections. Use `ContainExactlyEquivalent`, `ContainEquivalentSubset`, or `NotContainEquivalentInSubset` from `LTs.TestUtils.FluentAssertions` instead.
 - When an object contains a collection property, assert the object with `BeEquivalentTo` (excluding the collection when needed) and assert the collection separately with the appropriate collection extension.
 - Helper classes added only for tests must be internal classes under `<test project>\Infrastructure`, in their own file, not nested inside the test class.
+- Group test methods in `#region` blocks named after the production method or API under test (for example `#region LoadConfiguration`, `#region AddConfiguration`).
+- Build test configuration with `AddJsonString()` from `LTs.Configurations.Extensions` instead of `AddInMemoryCollection()` when exercising configuration binding.
 - Keep Arrange, Act, and Assert as separate blocks in each test.
 - Assign parsed, transformed, or extracted values to a local variable before asserting on them.
 - The expression before `.Should()` must be a local variable or parameter name only. Do not chain method calls, property access, indexing, LINQ, casts, or other expressions directly into `.Should()`.

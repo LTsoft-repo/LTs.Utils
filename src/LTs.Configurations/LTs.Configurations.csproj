@@ -35,7 +35,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="9.0.0" />
+        <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     </ItemGroup>
 
     <ItemGroup>

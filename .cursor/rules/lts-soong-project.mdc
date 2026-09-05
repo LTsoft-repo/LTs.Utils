@@ -53,7 +53,9 @@ These rules apply to the `LTs.Soong` repository and supplement generic guidance 
 
 - `LTs.Soong.Host` is the composition layer that wires Core, LLM, and tools together.
 - Host-specific planners and factories belong in Host, not Core.
-- Use an explicit `Program` class with `Main`, private static setup methods on `Program`, and no top-level statements.
+- Follow `.cursor/rules/host-composition.mdc` for `Program`, configuration registration, and Autofac service registration.
+- Follow `.cursor/rules/configuration.mdc` for typed configuration records, loaders, and appsettings conventions.
+- Use explicit `Program` class with `Main`, private static setup methods on `Program`, and no top-level statements.
 
 ## Style
 
@@ -65,6 +67,8 @@ These rules apply to the `LTs.Soong` repository and supplement generic guidance 
 
 - Add or update unit tests in the matching test project for every production code change in the same pass.
 - Follow `AGENTS.md` testing rules, including separate Arrange/Act/Assert blocks.
+- Group test methods in `#region` blocks named after the production method or API under test.
+- Build test configuration with `AddJsonString()` instead of `AddInMemoryCollection()` when exercising configuration binding.
 - Do not duplicate production `<PackageReference>` entries in test projects; use `<ProjectReference>` and production public APIs instead.
 - The expression before `.Should()` must be a local variable or parameter name only.
 - Do not insert a blank line between a variable assignment and its assertion.
