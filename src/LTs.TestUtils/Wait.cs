@@ -15,30 +15,24 @@ public static class Wait
     /// <returns></returns>
     public static async Task ForAsync( Func<Task<bool>> condition, TimeSpan timeout )
     {
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
+        var stopwatch = Stopwatch.StartNew();
 
-        while( true )
+        while( stopwatch.Elapsed < timeout )
         {
-            // Checks condition
             if( await condition() )
             {
                 return;
             }
 
-            // Checks timeout
-            if( stopwatch.Elapsed >= timeout )
-            {
-                break;
-            }
-
-            await Task.Delay( 10 ); // This used to be 100ms
+            await Task.Delay( 10 );
         }
 
-        if( stopwatch.Elapsed > timeout )
+        if( await condition() )
         {
-            throw new Exception( "Condition not satisfied in given time." );
+            return;
         }
+
+        throw new Exception( "Condition not satisfied in given time." );
     }
 
     /// <summary>

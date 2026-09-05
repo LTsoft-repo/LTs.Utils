@@ -53,6 +53,7 @@ These rules apply to the `LTs.Soong` repository and supplement generic guidance 
 
 - `LTs.Soong.Host` is the composition layer that wires Core, LLM, and tools together.
 - Host-specific planners and factories belong in Host, not Core.
+- Use an explicit `Program` class with `Main`, private static setup methods on `Program`, and no top-level statements.
 
 ## Style
 

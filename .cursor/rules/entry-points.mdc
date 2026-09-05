@@ -1,0 +1,43 @@
+---
+description: Require explicit Program classes and startup methods for entry points.
+alwaysApply: true
+---
+
+# Entry Points
+
+- Never use top-level statements for APIs, Function Apps, console apps, workers, or any executable entry point.
+- Always use an explicit `Program` class with a `Main` method.
+- Put startup in `Program.Main`, extracting setup into `private static` methods on `Program` when needed.
+- Do not delegate `Main` to a separate application startup class.
+
+```csharp
+// BAD - top-level statements
+var builder = WebApplication.CreateBuilder( args );
+var app = builder.Build();
+app.Run();
+
+// BAD - Main delegates everything away
+public static void Main( string[] args )
+    => SoongHostApplication.Run( args );
+
+// GOOD
+public class Program
+{
+    public static void Main( string[] args )
+    {
+        var builder = WebApplication.CreateBuilder( args );
+
+        ConfigureServices( builder );
+
+        var app = builder.Build();
+
+        ConfigurePipeline( app );
+
+        app.Run();
+    }
+
+    private static void ConfigureServices( WebApplicationBuilder builder ) { ... }
+
+    private static void ConfigurePipeline( WebApplication app ) { ... }
+}
+```

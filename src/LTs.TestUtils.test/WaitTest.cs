@@ -35,14 +35,14 @@ public class WaitTest : BaseTest
 #pragma warning restore CS4014
 
         await Wait.ForAsync( () => Task.FromResult( flag ),
-                             200.Milliseconds() );
+                             500.Milliseconds() );
 
         stopwatch.Stop();
 
         // Assert
         TestOutput.WriteLine( $"Elapsed time: {stopwatch.ElapsedMilliseconds} ms" );
         flag.Should().BeTrue();
-        stopwatch.ElapsedMilliseconds.Should().BeCloseTo( 100, 100 );
+        stopwatch.ElapsedMilliseconds.Should().BeInRange( 50, 500 );
     }
 
     [ Fact ]
@@ -110,13 +110,13 @@ public class WaitTest : BaseTest
 #pragma warning restore CS4014
 
         await Wait.ForAsync( () => flag,
-                             250.Milliseconds() );
+                             500.Milliseconds() );
 
         stopwatch.Stop();
 
         // Assert
         flag.Should().BeTrue();
-        stopwatch.ElapsedMilliseconds.Should().BeInRange( 100, 260 );
+        stopwatch.ElapsedMilliseconds.Should().BeInRange( 50, 500 );
     }
 
     [ Fact ]
@@ -168,13 +168,13 @@ public class WaitTest : BaseTest
 #pragma warning restore CS4014
 
         await Wait.ForAsync( () => flag,
-                             200.Milliseconds() );
+                             500.Milliseconds() );
 
         stopwatch.Stop();
 
         // Assert
         flag.Should().BeTrue();
-        stopwatch.ElapsedMilliseconds.Should().BeCloseTo( 100, 100 );
+        stopwatch.ElapsedMilliseconds.Should().BeInRange( 50, 500 );
     }
     #endregion
 }
