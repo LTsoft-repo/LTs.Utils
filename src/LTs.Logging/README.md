@@ -11,7 +11,8 @@ This library includes:
 - LTs.Logging.DependencyInjection
   - AutofacLoggerProvider
   - RegistrationExtensions.AddSerilog()
-  - RegistrationExtensions.RegisterLogConfiguration()
+  - RegistrationExtensions.AddLogConfiguration()
+  - RegistrationExtensions.RegisterLogConfiguration() (obsolete; use AddLogConfiguration)
 - LTs.Logging.Serilog.Abstractions
   - IFlushableSink
 - LTs.Logging.Serilog.Sinks

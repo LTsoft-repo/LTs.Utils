@@ -34,6 +34,7 @@ These rules apply to the entire repository.
 - Test classes do not require XML summaries.
 - Production public types and members need XML summaries when documentation generation is enabled.
 - Put each class, record, interface, enum, or struct in its own file. The file name must match the type name.
+- Do not seal classes or records unless the user explicitly requests it.
 - Do not place multiple types in the same file.
 - The only exception is `partial` types split across files, typically when one part is source-generated and extends the hand-written typed part.
 - Do not use nested helper types in production or test code; place test helpers under `<test project>\Infrastructure` instead.
@@ -89,6 +90,9 @@ These rules apply to the entire repository.
 - Each project folder should contain `GlobalSuppressions.cs`.
 - Use the latest preview version of LTsoft NuGet packages already used by the solution.
 - Do not update unrelated third-party packages unless explicitly asked.
+- Use `<ProjectReference>` only to other projects in this repository under `src\`.
+- Never add `<ProjectReference>` to projects outside this repository, including sibling repositories, absolute paths, or relative paths that escape the solution (for example `..\..\..\SomeOtherRepo\...`).
+- Reference LTsoft libraries from other repositories only through published `<PackageReference>` entries.
 - Do not duplicate `<PackageReference>` entries in `*.test` or `*.test.integration` projects when the same package is already referenced by a production project under test through `<ProjectReference>`.
 - Test projects should reference test-only packages (`LTs.TestUtils`, `xunit`, `Moq`, `coverlet.collector`, `Microsoft.NET.Test.Sdk`) plus `<ProjectReference>` to the project(s) under test.
 - If a test needs behavior from a production dependency, exercise it through the production project's public API instead of adding that package to the test project.

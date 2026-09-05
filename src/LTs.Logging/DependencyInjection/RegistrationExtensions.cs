@@ -35,13 +35,13 @@ public static class RegistrationExtensions
     }
 
     /// <summary>
-    ///     Registers the <see cref="LogConfiguration" /> loaded from <see cref="IConfiguration" />.
+    ///     Adds the <see cref="LogConfiguration" /> loaded from <see cref="IConfiguration" />.
     /// </summary>
     /// <param name="builder">The Autofac container builder.</param>
     /// <param name="sectionName">The name of the configuration section.</param>
     /// <returns>The container builder.</returns>
     [ UsedImplicitly ]
-    public static ContainerBuilder RegisterLogConfiguration( this ContainerBuilder builder, string sectionName )
+    public static ContainerBuilder AddLogConfiguration( this ContainerBuilder builder, string sectionName )
     {
         builder.Register( c => c.Resolve<IConfiguration>()
                                 .GetSection( sectionName )
@@ -50,4 +50,15 @@ public static class RegistrationExtensions
 
         return builder;
     }
+
+    /// <summary>
+    ///     Registers the <see cref="LogConfiguration" /> loaded from <see cref="IConfiguration" />.
+    /// </summary>
+    /// <param name="builder">The Autofac container builder.</param>
+    /// <param name="sectionName">The name of the configuration section.</param>
+    /// <returns>The container builder.</returns>
+    [ UsedImplicitly ]
+    [ Obsolete( "Use AddLogConfiguration instead." ) ]
+    public static ContainerBuilder RegisterLogConfiguration( this ContainerBuilder builder, string sectionName )
+        => builder.AddLogConfiguration( sectionName );
 }

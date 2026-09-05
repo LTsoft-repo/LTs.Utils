@@ -29,6 +29,12 @@ These rules apply to the `LTs.Soong` repository and supplement generic guidance 
 - Skills project: `src\LTs.Soong.Skills`
 - UI project: `src\LTs.Soong.UI`
 
+## Project References
+
+- Use `<ProjectReference>` only between projects in this repository under `src\`.
+- Never reference sibling repositories or external project paths through `<ProjectReference>`.
+- Consume LTsoft libraries from other repositories through published NuGet `<PackageReference>` entries only.
+
 ## JSON
 
 - Do not add `System.Text.Json` usage in new code in `LTs.Soong.Core`, `LTs.Soong.Host`, `LTs.Soong.Skills`, `LTs.Soong.Memory`, `LTs.Soong.Learning`, or `LTs.Soong.UI`.

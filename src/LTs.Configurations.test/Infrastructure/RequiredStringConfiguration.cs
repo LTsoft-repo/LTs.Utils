@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LTs.Configurations.test.Infrastructure;
 
-internal sealed record RequiredStringConfiguration
+internal record RequiredStringConfiguration
 {
     [ Required ]
     public string RequiredValue { get; init; } = string.Empty;

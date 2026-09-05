@@ -165,6 +165,45 @@ public class LogConfigurationExtensionsTest : BaseTest
     }
     #endregion
 
+    #region AddLogConfiguration
+    [ Fact ]
+    public void AddLogConfiguration_WithConfiguration_Successes()
+    {
+        // Arrange
+        var builder = new ContainerBuilder();
+
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection( new Dictionary<string, string?>
+            {
+                [ "Logs:A:Path" ] = @"..\ThisPath",
+                [ "Logs:A:MaxFileSizeInMegabytes" ] = "12",
+                [ "Logs:A:DebugLogRetainedFileCount" ] = "34",
+                [ "Logs:A:ErrorLogRetainedFileCount" ] = "56"
+            } )
+            .Build();
+
+        builder.Register<IConfiguration>( _ => config );
+
+        // Act
+        builder.AddLogConfiguration( "Logs:A" );
+
+        // Assert
+        var container = builder.Build();
+        var logConfiguration = container.Resolve<LogConfiguration>();
+        var expectedLogConfiguration = new LogConfiguration
+        {
+            Path = @"..\ThisPath",
+            MaxFileSizeInMegabytes = 12,
+            DebugLogRetainedFileCount = 34,
+            ErrorLogRetainedFileCount = 56
+        };
+
+        logConfiguration.Should().NotBeNull();
+        logConfiguration.Should().BeEquivalentTo( expectedLogConfiguration );
+    }
+    #endregion
+
+#pragma warning disable CS0618 // Type or member is obsolete
     #region RegisterLogConfiguration
     [ Fact ]
     public void RegisterLogConfiguration_WithConfiguration_Successes()
@@ -267,4 +306,5 @@ public class LogConfigurationExtensionsTest : BaseTest
         } );
     }
     #endregion
+#pragma warning restore CS0618 // Type or member is obsolete
 }

@@ -3,7 +3,7 @@ namespace LTs.Json.Extensions;
 /// <summary>
 ///     Options for converting JSON tokens to strings.
 /// </summary>
-public sealed record JsonStringOptions
+public record JsonStringOptions
 {
     /// <summary>
     ///     Default JSON string options.
