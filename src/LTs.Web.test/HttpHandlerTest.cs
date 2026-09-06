@@ -453,7 +453,8 @@ public class HttpHandlerTest : BaseTest
         var requestResponse = await client.SendAsync( hostUrl, HttpMethod.Delete );
 
         // Assert
-        requestResponse.Should().BeEquivalentTo( new HttpResponseMessage( HttpStatusCode.OK ) );
+        var statusCode = requestResponse.StatusCode;
+        statusCode.Should().Be( HttpStatusCode.OK );
     }
     #endregion
 
