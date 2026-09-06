@@ -19,7 +19,7 @@ Use this pattern for typed settings in host and library projects.
 
 ## appsettings.json
 
-- Use PascalCase top-level section names (`SoongHost`, `Ollama`, `Logging`).
+- Use PascalCase top-level section names (`Host`, `Feature`, `Logging`).
 - Group related settings under nested objects when a feature owns multiple values.
 - Keep baseline values in `appsettings.json`.
 - Support environment overlays, user secrets, and environment variables through `ConfigureDefaultHostApplication`.
@@ -33,11 +33,11 @@ Use this pattern for typed settings in host and library projects.
 - Use `LoadConfiguration<T>( IConfiguration configuration, string sectionName )` to load a typed record from a section.
 - Use `AddConfiguration<T>( ContainerBuilder builder, string sectionName )` to register a typed record as an Autofac singleton.
 - Use the `AddConfiguration<T>( ..., Func<T, T>? configure )` overload only when a setting needs explicit post-load transformation that the generic loader does not provide.
-- Required-property failures must throw `ConfigurationException` with the full section path, for example `SoongHost:Model`.
+- Required-property failures must throw `ConfigurationException` with the full section path, for example `Host:Model`.
 
 ```csharp
-builder.AddConfiguration<SoongHostConfiguration>( SoongHostConfiguration.SectionName );
-builder.AddConfiguration<OllamaConfiguration>( OllamaConfiguration.SectionName );
+builder.AddConfiguration<HostConfiguration>( HostConfiguration.SectionName );
+builder.AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName );
 ```
 
 ## Host Registration
@@ -55,11 +55,11 @@ builder.ConfigureDefaultHostApplication<Program>(
     RegisterServices,
     RegisterWebServices );
 
-internal static void RegisterConfiguration( ContainerBuilder builder )
+public static void RegisterConfiguration( ContainerBuilder builder )
 {
     builder.RegisterLogConfiguration( "Logging:Files" );
-    builder.AddConfiguration<SoongHostConfiguration>( SoongHostConfiguration.SectionName );
-    builder.AddConfiguration<OllamaConfiguration>( OllamaConfiguration.SectionName );
+    builder.AddConfiguration<HostConfiguration>( HostConfiguration.SectionName );
+    builder.AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName );
 }
 ```
 
@@ -72,7 +72,7 @@ internal static void RegisterConfiguration( ContainerBuilder builder )
 
 ## Testing
 
-- Add tests in `LTs.Configurations.test` for generic loader behavior when changing loader rules.
+- Add tests for generic loader behavior when changing loader rules.
 - Add host tests that verify `Program.RegisterConfiguration` resolves expected typed configuration.
 - Add tests for `[Required]` failures with clear `ConfigurationException` messages.
 - Group test methods in `#region` blocks named after the production method or API under test (for example `#region LoadConfiguration`, `#region AddConfiguration`).
