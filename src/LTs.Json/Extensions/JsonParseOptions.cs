@@ -3,7 +3,7 @@ namespace LTs.Json.Extensions;
 /// <summary>
 ///     Options for parsing JSON strings.
 /// </summary>
-public sealed record JsonParseOptions
+public record JsonParseOptions
 {
     /// <summary>
     ///     Default JSON parse options.

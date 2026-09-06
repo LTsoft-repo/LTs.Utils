@@ -1,0 +1,301 @@
+---
+description: Console executable host project layout, Infrastructure pattern, and test requirements.
+alwaysApply: true
+---
+
+# Host Console Executable
+
+Use this pattern when creating or changing a console host executable named `<Prefix>.Host.Console`.
+
+## Template Placeholders
+
+Replace placeholders with names from the target solution:
+
+| Placeholder | Example | Role |
+|-------------|---------|------|
+| `<Prefix>` | `Acme.Product` | Solution/project prefix |
+| `HostConfiguration` | typed settings for the host | Main `appsettings` section |
+| `FeatureConfiguration` | typed settings for an integration | Secondary `appsettings` section |
+| `AddHostConfiguration()` | registration extension on `ContainerBuilder` | Registers `HostConfiguration` |
+| `AddHost()` | registration extension on `ContainerBuilder` | Registers production host services |
+| `HostCompositionRoot` | static composition class | Wires the production service graph |
+| `HostRuntime` | runtime wrapper type | Resolved from DI for composition tests |
+| `IApplicationService` | primary domain abstraction | Called by `ConsoleAppLogic` |
+| `ApplicationRequest` | domain input model | Built from command-line arguments |
+| `IConsoleAppLogic` | console entry contract | Resolved from DI in `Main` |
+| `IResultConsoleFormatter` | formatter abstraction | Formats application results for stdout |
+
+## Solution Structure
+
+Host executables sit beside a shared composition library. Each executable has its own unit test project; shared host tests and integration tests live in separate projects.
+
+```
+src/
+  Prefix.Host/                    # shared composition library (not executable)
+    Configuration/
+    Composition/
+    DependencyInjection/
+    Models/
+  Prefix.Host.Api/                # Web API executable (see host-api.mdc)
+  Prefix.Host.Console/            # console executable
+    Program.cs
+    appsettings.json
+    Infrastructure/
+      Abstractions/
+      ConsoleAppLogic.cs
+      ConsoleAppLogicConfigurationExtensions.cs
+      ConsoleAppLogicServiceExtensions.cs
+      ConsoleExitCode.cs
+      ResultConsoleFormatter.cs
+      StandardConsoleOutput.cs
+      TextWriterConsoleOutput.cs
+  Prefix.Host.test/
+  Prefix.Host.Api.test/
+  Prefix.Host.Console.test/
+  Prefix.Host.test.integration/
+```
+
+## Role In The Solution
+
+- The console project is a **thin executable**. It parses command-line input, runs the application workflow, and returns a process exit code.
+- Shared composition and `AddHost` registration live in `<Prefix>.Host`.
+- The console project references **only** `<Prefix>.Host`. Do not add direct `<ProjectReference>` entries to domain or integration projects.
+
+## Project Layout
+
+- Project name: `<Prefix>.Host.Console`
+- Test project name: `<Prefix>.Host.Console.test`
+- Sdk: `Microsoft.NET.Sdk` with `<OutputType>Exe</OutputType>`
+
+Do **not** create a `Console/` code folder when the project is already named `*.Host.Console`; that repeats the namespace segment and creates confusing names such as `Prefix.Host.Console.Console`.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <UserSecretsId>Prefix-Host-Console</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Prefix.Host\Prefix.Host.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+</Project>
+```
+
+## appsettings.json
+
+Mirror the sections required by `AddConsoleAppLogicConfiguration`:
+
+- `Logging:Files:Path` — consumed by `RegisterLogConfiguration`
+- `Host` (or the `HostConfiguration.SectionName` value) — consumed by `AddHostConfiguration`
+- `Feature` (or the `FeatureConfiguration.SectionName` value) — consumed by `AddConfiguration<FeatureConfiguration>`
+
+```json
+{
+  "Logging": {
+    "Files": {
+      "Path": "%TEMP%\\Prefix.Host.Console\\Logs"
+    }
+  },
+  "Host": {
+    "Setting": "value"
+  },
+  "Feature": {
+    "Endpoint": "http://localhost:8080/",
+    "Timeout": "00:05:00"
+  }
+}
+```
+
+## Wiring Chain
+
+```
+Program.RegisterConfiguration
+  └─ RegisterLogConfiguration( "Logging:Files" )
+  └─ AddConsoleAppLogicConfiguration()              # in Infrastructure/
+       └─ AddHostConfiguration( HostConfiguration.SectionName )
+       └─ AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName )
+
+Program.RegisterServices
+  └─ AddConsoleAppLogic( configurationProvider )    # in Infrastructure/
+       └─ AddHost( configurationProvider )          # in Prefix.Host/DependencyInjection/
+       │    └─ resolve HostConfiguration + FeatureConfiguration
+       │    └─ HostCompositionRoot.RegisterProductionServices( builder )
+       │         └─ external clients, domain services, tools
+       │         └─ IApplicationService
+       │         └─ HostRuntime
+       └─ StandardConsoleOutput as IConsoleOutput
+       └─ ResultConsoleFormatter as IResultConsoleFormatter
+       └─ ConsoleAppLogic as IConsoleAppLogic
+
+Main
+  └─ resolve IConsoleAppLogic
+  └─ return await appLogic.RunAsync( args )
+       └─ parse args → build ApplicationRequest → IApplicationService.RunAsync
+       └─ format result via IResultConsoleFormatter
+       └─ write via IConsoleOutput
+       └─ return (int)ConsoleExitCode
+```
+
+- `Program` registers logging bootstrap only. All other configuration and service wiring lives in `Infrastructure/` extensions.
+- `AddConsoleAppLogic` must call `AddHost` before registering console-specific services so `IApplicationService` and configuration are available to `ConsoleAppLogic`.
+
+## Program Bootstrap
+
+- Follow `.cursor/rules/entry-points.mdc` and `.cursor/rules/host-composition.mdc`.
+- Use an explicit `Program` class with a **public** `async Task<int> Main`, `RegisterConfiguration`, and `RegisterServices`.
+- Use `Host.CreateApplicationBuilder( args )` and `ConfigureDefaultHostApplication<Program>`.
+- Pass an empty web-services delegate: `_ => { }`.
+- After build, resolve `IConsoleAppLogic` from Autofac and return its exit code.
+- On startup failure, log and return `(int)ConsoleExitCode.UnexpectedError`.
+
+```csharp
+public static async Task<int> Main( string[] args )
+{
+    ILogger? logger = null;
+
+    try
+    {
+        var builder = Host.CreateApplicationBuilder( args );
+
+        builder.ConfigureDefaultHostApplication<Program>(
+            string.Empty,
+            RegisterConfiguration,
+            RegisterServices,
+            _ => { } );
+
+        using var host = builder.Build();
+
+        var container = host.Services.GetAutofacRoot();
+        logger = container.Resolve<ILogger<Program>>();
+
+        var appLogic = container.Resolve<IConsoleAppLogic>();
+
+        return await appLogic.RunAsync( args );
+    }
+    catch( Exception ex )
+    {
+        logger?.LogError( ex, "An error occurred while starting the application" );
+        return (int)ConsoleExitCode.UnexpectedError;
+    }
+}
+
+public static void RegisterConfiguration( ContainerBuilder builder )
+{
+    builder.RegisterLogConfiguration( "Logging:Files" );
+    builder.AddConsoleAppLogicConfiguration();
+}
+
+public static void RegisterServices( ContainerBuilder builder,
+                                     IAutofacConfigurationProvider configurationProvider )
+    => builder.AddConsoleAppLogic( configurationProvider );
+```
+
+## Infrastructure Pattern
+
+Colocate console feature wiring beside the console workflow.
+
+| File | Responsibility |
+|------|----------------|
+| `Infrastructure/Abstractions/IConsoleAppLogic.cs` | Console entry contract (`RunAsync` returns exit code) |
+| `Infrastructure/Abstractions/IConsoleOutput.cs` | Console output abstraction for production and tests |
+| `Infrastructure/Abstractions/IResultConsoleFormatter.cs` | Human-readable result formatting contract |
+| `Infrastructure/ConsoleAppLogic.cs` | Parse args, build `ApplicationRequest`, call `IApplicationService`, format/write output, return exit code |
+| `Infrastructure/ConsoleExitCode.cs` | Process exit codes as an `enum`, not `public const int` |
+| `Infrastructure/ConsoleAppLogicConfigurationExtensions.cs` | `AddConsoleAppLogicConfiguration()` |
+| `Infrastructure/ConsoleAppLogicServiceExtensions.cs` | `AddConsoleAppLogic()` |
+| `Infrastructure/StandardConsoleOutput.cs` | Production `IConsoleOutput` |
+| `Infrastructure/TextWriterConsoleOutput.cs` | Test `IConsoleOutput` over `TextWriter` |
+| `Infrastructure/ResultConsoleFormatter.cs` | Production formatter implementation |
+
+### Configuration extension
+
+```csharp
+public static ContainerBuilder AddConsoleAppLogicConfiguration( this ContainerBuilder builder )
+{
+    builder.AddHostConfiguration( HostConfiguration.SectionName );
+    builder.AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName );
+    return builder;
+}
+```
+
+### Service extension
+
+```csharp
+public static ContainerBuilder AddConsoleAppLogic( this ContainerBuilder builder,
+                                                   IAutofacConfigurationProvider configurationProvider )
+{
+    builder.AddHost( configurationProvider );
+
+    builder.RegisterType<StandardConsoleOutput>()
+           .As<IConsoleOutput>()
+           .SingleInstance();
+
+    builder.RegisterType<ResultConsoleFormatter>()
+           .As<IResultConsoleFormatter>()
+           .SingleInstance();
+
+    builder.RegisterType<ConsoleAppLogic>()
+           .As<IConsoleAppLogic>()
+           .SingleInstance();
+
+    return builder;
+}
+```
+
+Registration rules:
+
+- Call `AddHost( configurationProvider )` from the console service extension, not from `Program`.
+- Register every console implementation with `.As<IAbstraction>()` and `.SingleInstance()` where appropriate.
+
+## Exit Codes
+
+- Define exit codes in a `ConsoleExitCode` enum: `Success = 0`, `InvalidInput = 1`, `ApplicationFailed = 2`, `UnexpectedError = 3`.
+- Return enum values cast to `int` from `IConsoleAppLogic.RunAsync`.
+- Map unexpected startup exceptions in `Main` to `ConsoleExitCode.UnexpectedError`.
+
+## Forbidden
+
+- Top-level statements.
+- Delegating `Main` to a separate startup class.
+- `InternalsVisibleTo` for test assemblies.
+- A `Console/` folder inside a `*.Host.Console` project.
+- Duplicating production composition that already belongs in `<Prefix>.Host`.
+- Executable-specific tests in `<Prefix>.Host.test`; use `<Prefix>.Host.Console.test` instead.
+
+## Tests
+
+Test project layout:
+
+```
+Prefix.Host.Console.test/
+  Configuration/
+    ProgramConfigurationRegistrationTests.cs
+    ProgramServiceRegistrationTests.cs
+  Infrastructure/
+    ConsoleAppLogicTests.cs
+    ResultConsoleFormatterTests.cs
+```
+
+Required composition tests:
+
+- `ProgramConfigurationRegistrationTests` — call `Program.RegisterConfiguration`, resolve `HostConfiguration` and `FeatureConfiguration`, assert with `BeEquivalentTo`.
+- `ProgramServiceRegistrationTests` — build `AutofacConfigurationProvider` with `Program.RegisterConfiguration`, call `AddConfigurationProvider`, register `NullLogger<>` as `ILogger<>`, call `Program.RegisterServices`, resolve `IConsoleAppLogic`, `HostRuntime`, `IApplicationService`, `IResultConsoleFormatter`, `IConsoleOutput`, verify types and that the runtime exposes the same application service instance, assert configuration values.
+
+Feature tests:
+
+- Test `ConsoleAppLogic` with mocked `IApplicationService`, `IConsoleOutput`, and formatter dependencies.
+- Use `TextWriterConsoleOutput` in tests that need captured console output.
+- End-to-end console scenarios that call real external services belong in `<Prefix>.Host.test.integration`.
+
+Build test configuration with `AddJsonString()`, not `AddInMemoryCollection()`.

@@ -5,12 +5,12 @@
 /// </summary>
 /// <param name="JsonPath">JSON path to match.</param>
 /// <param name="Match">Matcher to execute for the selected JSON value.</param>
-public sealed record JsonAssertionMatcher( string JsonPath, Action<string?> Match );
+public record JsonAssertionMatcher( string JsonPath, Action<string?> Match );
 
 /// <summary>
 ///     Options for JSON equivalencies.
 /// </summary>
-public sealed record JsonAssertionOptions
+public record JsonAssertionOptions
 {
     /// <summary>
     ///     Default JSON assertion options.

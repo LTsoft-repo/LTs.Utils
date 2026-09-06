@@ -1,0 +1,136 @@
+---
+description: Host bootstrap pattern using LTs.Hosting, Autofac, and Program configuration registration.
+alwaysApply: true
+---
+
+# Host Composition
+
+Use this pattern for shared host libraries and runnable host executable projects.
+
+## Shared Host Library
+
+The shared `<Prefix>.Host` class library is **not** an executable. API and console executables reference it and call its registration extensions.
+
+```
+Prefix.Host/
+  Configuration/
+    HostConfiguration.cs              # typed settings record + SectionName
+    HostConfigurationExtensions.cs    # AddHostConfiguration() wrapper
+  DependencyInjection/
+    ServiceRegistrationExtensions.cs  # AddHost() entry point for executables
+  Composition/
+    HostCompositionRoot.cs            # RegisterProductionServices()
+    HostFactory.cs / HostRuntime.cs   # runtime wiring
+    ApplicationFactory.cs             # domain service construction
+  Models/                             # shared API request/response models
+```
+
+`AddHost( configurationProvider )` must:
+
+1. Read typed configuration from `IAutofacConfigurationProvider`.
+2. Register configuration instances on the container if not already registered.
+3. Call `HostCompositionRoot.RegisterProductionServices( builder )` to wire external clients, domain services, and `HostRuntime`.
+
+Executable-specific rules:
+
+- Web API: `.cursor/rules/host-api.mdc`
+- Console: `.cursor/rules/host-console.mdc`
+
+## Program
+
+- Use an explicit `Program` class with a public `Main` method.
+- Wrap startup in `try/catch`, resolve `ILogger<Program>` from the Autofac root, and log startup failures.
+- For Web APIs, call `ConfigureDefaultHostApplication<Program>` on `WebApplication.CreateBuilder( args )`.
+- Keep `Program` as the composition root only. Do not put business logic in `Program`.
+- Put configuration registration in `Program.RegisterConfiguration( ContainerBuilder builder )` as `public static`.
+- Put service registration in `Program.RegisterServices( ContainerBuilder builder, IAutofacConfigurationProvider configurationProvider )` as `public static`.
+- Never create a separate `ConfigurationIoC.cs` or other configuration bootstrap class.
+- `Program` registers host-bootstrap concerns only, such as `RegisterLogConfiguration`. Delegate feature-owned configuration and services to registration extensions colocated with that feature.
+
+```csharp
+public static void Main( string[] args )
+{
+    ILogger? logger = null;
+
+    try
+    {
+        var builder = WebApplication.CreateBuilder( args );
+
+        builder.ConfigureDefaultHostApplication<Program>(
+            string.Empty,
+            RegisterConfiguration,
+            RegisterServices,
+            RegisterWebServices );
+
+        var app = builder.Build();
+
+        var container = app.Services.GetAutofacRoot();
+        logger = container.Resolve<ILogger<Program>>();
+
+        ConfigurePipeline( app );
+
+        app.Run();
+    }
+    catch( Exception ex )
+    {
+        logger?.LogError( ex, "An error occurred while starting the application" );
+        throw;
+    }
+}
+
+public static void RegisterConfiguration( ContainerBuilder builder )
+{
+    builder.RegisterLogConfiguration( "Logging:Files" );
+    builder.AddConfiguration<HostConfiguration>( HostConfiguration.SectionName );
+    builder.AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName );
+}
+
+public static void RegisterServices( ContainerBuilder builder,
+                                     IAutofacConfigurationProvider configurationProvider )
+    => builder.AddHostServices( configurationProvider );
+```
+
+## Configuration
+
+- Follow `.cursor/rules/configuration.mdc` for typed configuration records, loaders, and appsettings layout.
+- Chain all host configuration registration inside `Program.RegisterConfiguration`.
+- Pass `RegisterConfiguration` directly to `ConfigureDefaultHostApplication`.
+
+## Dependency Injection
+
+- Use Autofac extension methods in `DependencyInjection/` for shared library projects.
+- Colocate feature-owned registration extensions with the feature they wire instead of centralizing unrelated registration in `Program`.
+- Name service registration entry points `Add<Area>...`.
+- Register runtime singletons in Autofac, not ad hoc MS.DI registrations in `Program`.
+- Use `IAutofacConfigurationProvider.Get<T>()` inside service registration when typed configuration is required.
+
+## Web API
+
+- Register controllers in `Program.RegisterWebServices( IServiceCollection services )` with `services.AddControllers()`.
+- Map controllers in `ConfigurePipeline` with `app.MapControllers()`.
+- Place HTTP endpoints in `Controllers/`, not minimal API `Endpoints/` classes.
+- Follow `.cursor/rules/host-api.mdc` for Web API executable project layout and creation.
+
+## Console Executable
+
+- Use `Host.CreateApplicationBuilder` instead of `WebApplication.CreateBuilder`.
+- Return process exit codes from `async Task<int> Main` through a console application abstraction such as `IConsoleAppLogic`.
+- Delegate console-owned configuration and services to `Infrastructure/` registration extensions; keep `Program` thin.
+- Follow `.cursor/rules/host-console.mdc` for console executable project layout and creation.
+
+## Project Layout
+
+- `Program.cs` at the host project root.
+- `Configuration/` for configuration types and loaders only.
+- `DependencyInjection/` for Autofac service registration extensions.
+- `Controllers/` for API controllers.
+- `Functions/` for Azure Function trigger entry points when applicable.
+- `Composition/` for factories and runtime wiring shared by the host.
+- Keep domain behavior in sibling projects; the host project composes them.
+
+## Packages
+
+- Use `LTs.Hosting` for `ConfigureDefaultHostApplication`.
+- Use `LTs.Logging` for Serilog registration helpers.
+- Use `LTs.Configurations` for default configuration loading.
+- Use `LTs.DependencyInjections` for `GetAutofacRoot`.

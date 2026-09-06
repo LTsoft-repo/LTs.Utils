@@ -17,6 +17,8 @@ This library includes:
   - ScheduleConfigurationLoader.LoadScheduleConfiguration&lt;T&gt;()
   - ScheduleConfigurationRegistrationExtensions.AddScheduleConfiguration()
   - ScheduleConfigurationRegistrationExtensions.AddScheduleConfiguration&lt;T&gt;()
+  - TypedConfigurationLoader.LoadConfiguration&lt;T&gt;()
+  - TypedConfigurationLoader.AddConfiguration&lt;T&gt;()
 - LTs.Configurations.DependencyInjection
   - RegistrationExtensions.AddConfigurationProvider()
 - LTs.Configurations.Exceptions

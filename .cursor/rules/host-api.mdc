@@ -1,0 +1,246 @@
+---
+description: Web API executable host project layout, Program bootstrap, and test requirements.
+alwaysApply: true
+---
+
+# Host Web API Executable
+
+Use this pattern when creating or changing a Web API host executable named `<Prefix>.Host.Api`.
+
+## Template Placeholders
+
+Replace placeholders with names from the target solution:
+
+| Placeholder | Example | Role |
+|-------------|---------|------|
+| `<Prefix>` | `Acme.Product` | Solution/project prefix |
+| `HostConfiguration` | typed settings for the host | Main `appsettings` section |
+| `FeatureConfiguration` | typed settings for an integration | Secondary `appsettings` section |
+| `AddHostConfiguration()` | registration extension on `ContainerBuilder` | Registers `HostConfiguration` |
+| `AddHost()` | registration extension on `ContainerBuilder` | Registers production host services |
+| `HostCompositionRoot` | static composition class | Wires the production service graph |
+| `HostRuntime` | runtime wrapper type | Resolved from DI; not injected into controllers |
+| `IApplicationService` | primary domain abstraction | Injected into controllers |
+| `ApplicationRequest` | domain input model | Mapped from HTTP request DTOs |
+| `ApplicationController` | API controller | Thin HTTP adapter |
+
+## Solution Structure
+
+Host executables sit beside a shared composition library. Each executable has its own unit test project; shared host tests and integration tests live in separate projects.
+
+```
+src/
+  Prefix.Host/                    # shared composition library (not executable)
+    Configuration/
+    Composition/
+    DependencyInjection/
+    Models/
+  Prefix.Host.Api/                # Web API executable
+    Program.cs
+    appsettings.json
+    Controllers/
+    Properties/
+  Prefix.Host.Console/            # console executable (see host-console.mdc)
+  Prefix.Host.test/               # tests for the shared library only
+  Prefix.Host.Api.test/           # tests for the API executable
+  Prefix.Host.Console.test/       # tests for the console executable
+  Prefix.Host.test.integration/   # end-to-end tests across executables
+```
+
+## Role In The Solution
+
+- The API project is a **thin executable**. It exposes HTTP endpoints and bootstraps the host.
+- Shared composition, factories, and `AddHost` registration live in `<Prefix>.Host`.
+- The API project references **only** `<Prefix>.Host`. Do not add direct `<ProjectReference>` entries to domain or integration projects.
+
+## Project Layout
+
+- Project name: `<Prefix>.Host.Api`
+- Test project name: `<Prefix>.Host.Api.test`
+- Sdk: `Microsoft.NET.Sdk.Web`
+
+```
+Prefix.Host.Api/
+  Program.cs
+  appsettings.json
+  GlobalSuppressions.cs
+  Controllers/
+    ApplicationController.cs
+    HealthController.cs
+  Properties/
+    launchSettings.json
+```
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Prefix.Host\Prefix.Host.csproj" />
+    </ItemGroup>
+</Project>
+```
+
+## appsettings.json
+
+Each executable carries its own `appsettings.json` with the sections its registration path requires:
+
+- `Logging:Files:Path` — consumed by `RegisterLogConfiguration`
+- `Host` (or the `HostConfiguration.SectionName` value) — consumed by `AddHostConfiguration`
+- `Feature` (or the `FeatureConfiguration.SectionName` value) — consumed by `AddConfiguration<FeatureConfiguration>`
+
+```json
+{
+  "Logging": {
+    "Files": {
+      "Path": "%TEMP%\\Prefix.Host.Api\\Logs"
+    }
+  },
+  "Host": {
+    "Setting": "value"
+  },
+  "Feature": {
+    "Endpoint": "http://localhost:8080/",
+    "Timeout": "00:05:00"
+  }
+}
+```
+
+## Wiring Chain
+
+```
+Program.RegisterConfiguration
+  └─ RegisterLogConfiguration( "Logging:Files" )
+  └─ AddHostConfiguration( HostConfiguration.SectionName )
+  └─ AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName )
+
+Program.RegisterServices
+  └─ AddHost( configurationProvider )               # in Prefix.Host/DependencyInjection/
+       └─ resolve HostConfiguration + FeatureConfiguration
+       └─ HostCompositionRoot.RegisterProductionServices( builder )
+            └─ external clients, domain services, tools
+            └─ IApplicationService
+            └─ HostRuntime
+
+Program.RegisterWebServices
+  └─ services.AddControllers()
+
+ConfigurePipeline
+  └─ app.MapControllers()
+
+Controller action
+  └─ inject IApplicationService + HostConfiguration (not HostRuntime)
+```
+
+- Configuration types are registered in `Program.RegisterConfiguration`.
+- Production runtime services are registered only through `AddHost` in `<Prefix>.Host`.
+- Controllers consume domain abstractions resolved from that graph.
+
+## Program Bootstrap
+
+- Follow `.cursor/rules/entry-points.mdc` and `.cursor/rules/host-composition.mdc`.
+- Use an explicit `Program` class with a **public** `Main`, `RegisterConfiguration`, and `RegisterServices`.
+- Use `WebApplication.CreateBuilder( args )` and `ConfigureDefaultHostApplication<Program>`.
+- Wrap startup in `try/catch`, resolve `ILogger<Program>` from the Autofac root, and log startup failures before rethrowing.
+
+```csharp
+public static void Main( string[] args )
+{
+    ILogger? logger = null;
+
+    try
+    {
+        var builder = WebApplication.CreateBuilder( args );
+
+        builder.ConfigureDefaultHostApplication<Program>(
+            string.Empty,
+            RegisterConfiguration,
+            RegisterServices,
+            RegisterWebServices );
+
+        var app = builder.Build();
+
+        var container = app.Services.GetAutofacRoot();
+        logger = container.Resolve<ILogger<Program>>();
+
+        ConfigurePipeline( app );
+
+        app.Run();
+    }
+    catch( Exception ex )
+    {
+        logger?.LogError( ex, "An error occurred while starting the application" );
+        throw;
+    }
+}
+
+public static void RegisterConfiguration( ContainerBuilder builder )
+{
+    builder.RegisterLogConfiguration( "Logging:Files" );
+    builder.AddHostConfiguration( HostConfiguration.SectionName );
+    builder.AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName );
+}
+
+public static void RegisterServices( ContainerBuilder builder,
+                                     IAutofacConfigurationProvider configurationProvider )
+    => builder.AddHost( configurationProvider );
+
+private static void RegisterWebServices( IServiceCollection services )
+    => services.AddControllers();
+
+private static void ConfigurePipeline( WebApplication app )
+    => app.MapControllers();
+```
+
+- `Program` wires bootstrap and the shared host library. Do not put business logic in `Program`.
+- If the API grows feature-specific configuration or services, add `Infrastructure/` registration extensions colocated with that feature and call them from `RegisterConfiguration` / `RegisterServices`.
+
+## Controllers
+
+- Place controllers in `Controllers/`, not minimal API `Endpoints/` classes.
+- Use `[ApiController]` and explicit route attributes.
+- Inject `IApplicationService` and typed configuration such as `HostConfiguration`.
+- Do **not** inject `HostRuntime` into controllers.
+- Keep HTTP request/response models in `<Prefix>.Host/Models/` when they are shared with tests or multiple endpoints.
+- Keep controllers thin: validate input, map to domain models (`ApplicationRequest`), call the application service, return `ActionResult<T>`.
+
+## Forbidden
+
+- Top-level statements.
+- Delegating `Main` to a separate startup class.
+- `InternalsVisibleTo` for test assemblies.
+- Duplicating production composition that already belongs in `<Prefix>.Host`.
+- Executable-specific tests in `<Prefix>.Host.test`; use `<Prefix>.Host.Api.test` instead.
+
+## Tests
+
+Test project layout:
+
+```
+Prefix.Host.Api.test/
+  Configuration/
+    ProgramConfigurationRegistrationTests.cs
+    ProgramServiceRegistrationTests.cs
+  Controllers/
+    ApplicationControllerTests.cs
+  Infrastructure/
+    HostWebApplicationFactory.cs
+```
+
+Required composition tests:
+
+- `ProgramConfigurationRegistrationTests` — call `Program.RegisterConfiguration`, resolve `HostConfiguration` and `FeatureConfiguration`, assert with `BeEquivalentTo`.
+- `ProgramServiceRegistrationTests` — build `AutofacConfigurationProvider` with `Program.RegisterConfiguration`, call `AddConfigurationProvider`, call `Program.RegisterServices`, resolve `HostRuntime` and `IApplicationService`, verify the runtime exposes the same application service instance, assert configuration values.
+
+Controller and HTTP tests:
+
+- Place controller unit tests under `Controllers/`.
+- Use a `WebApplicationFactory` in `Infrastructure/` when testing HTTP behavior.
+- End-to-end scenarios that call real external services belong in `<Prefix>.Host.test.integration`.
+
+Build test configuration with `AddJsonString()`, not `AddInMemoryCollection()`.

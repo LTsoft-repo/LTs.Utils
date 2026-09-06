@@ -8,7 +8,14 @@ These rules apply to the entire repository.
 - Read `AGENTS.md` before making edits, and follow its conventions unless the user explicitly overrides them.
 - When other guidance conflicts with `AGENTS.md`, prefer `AGENTS.md` for repository-specific decisions.
 
-## Before Editing
+## Rules Authoring
+
+- Rules in `.cursor/rules/` and reusable guidance in `AGENTS.md` must be **generic and portable** unless the user explicitly asks for repository- or solution-specific rules.
+- Use placeholders (`<Prefix>`, `HostConfiguration`, `IApplicationService`) in rules — never production type, project, or `appsettings` section names from this solution.
+- When documenting a pattern from existing code, extract the generic shape first, then name placeholders. Do not copy current implementation names into rules.
+- Do not create solution maps, project inventories, or area-specific rule files (for example `*-project.mdc`) unless the user explicitly requests them.
+- Executable and host rules must be copyable to another LTsoft repo with only placeholder renames and a new `*.Host` implementation.
+
 
 - Read the relevant code first and follow the existing structure.
 - Check `git status --short` before edits and do not overwrite or revert user changes.
@@ -34,6 +41,7 @@ These rules apply to the entire repository.
 - Test classes do not require XML summaries.
 - Production public types and members need XML summaries when documentation generation is enabled.
 - Put each class, record, interface, enum, or struct in its own file. The file name must match the type name.
+- Do not seal classes or records unless the user explicitly requests it.
 - Do not place multiple types in the same file.
 - The only exception is `partial` types split across files, typically when one part is source-generated and extends the hand-written typed part.
 - Do not use nested helper types in production or test code; place test helpers under `<test project>\Infrastructure` instead.
@@ -45,17 +53,32 @@ These rules apply to the entire repository.
 
 - Never use top-level statements for APIs, Function Apps, console apps, workers, or any executable entry point.
 - Always use an explicit `Program` class with a `Main` method.
-- Put startup in `Program.Main`, extracting setup into `private static` methods on `Program` when needed.
+- Use a public `Main` method and public static registration methods on `Program` when tests or host bootstrap need direct access.
+- Follow `.cursor/rules/host-composition.mdc` for host bootstrap, configuration, and Autofac registration.
+- Follow `.cursor/rules/configuration.mdc` for typed configuration records, loaders, and appsettings conventions.
+- Follow `.cursor/rules/host-api.mdc` when creating or editing a Web API host executable (`<Prefix>.Host.Api`).
+- Follow `.cursor/rules/host-console.mdc` when creating or editing a console host executable (`<Prefix>.Host.Console`).
+- Put startup in `Program.Main`, extracting setup into public static methods on `Program` when needed.
 - Do not delegate `Main` to a separate application startup class.
 
 ## Code Design
 
 - Any code must follow SOLID principles.
+- Keep separation of concerns: entry points and composition roots decide **what** to wire, not **how** each piece is built or loaded.
+- `Program` and similar bootstrap code should call registration helpers instead of inlining configuration loading, binding, transformation, or service wiring details.
+- `Program` should register only host-bootstrap concerns the entry point itself needs, such as logging bootstrap configuration. Delegate feature-owned configuration and services to registration extensions colocated with that feature.
+- Register dependencies through abstractions in Autofac and similar containers. Use `.As<IAbstraction>()` instead of registering concrete types directly when an abstraction exists.
+- Use enums for fixed value sets such as exit codes and status codes. Do not use groups of `public const int` fields for the same purpose.
+- Never use `InternalsVisibleTo` for test assemblies anywhere in the solution. It is never necessary when production code is written correctly. If a test needs access, fix the production API: make the constructor, factory, type, or registration path public instead.
+- Avoid code folders whose names repeat project or namespace segments and create confusing nested names.
+- Place interfaces in an `Abstractions` folder beside their implementations.
+- When the user asks to clean up code they added, fix the reported defect in place. Do not delete their abstraction, move its logic into `Program`, or replace it with a different design unless they explicitly ask.
+- Avoid one-of designs: do not introduce parallel APIs, overloads, or shapes that mean "pick one of several ways to do the same thing." Prefer one clear path unless the user explicitly asks for alternatives.
 
 ## LTsoft Libraries
 
 - Prefer classes, extension methods, and comparers from LTsoft NuGet packages (`LTs.Utils`, `LTs.Json`, `LTs.TestUtils`, `LTs.Web`, and related LTsoft packages) before introducing local helpers.
-- Search existing LTsoft packages and sibling repositories for an existing utility before adding duplicate implementations in this repository.
+- Search existing LTsoft packages and sibling repositories for an existing utility before adding duplicate implementations.
 - For `JToken` comparisons in tests, use `BeSameJsonAs` from `LTs.TestUtils.FluentAssertions` or `JTokenEqualityComparer` from `Newtonsoft.Json.Linq` with `BeEquivalentTo`, not custom comparers.
 - For collection comparisons in tests, use `ContainExactlyEquivalent`, `ContainEquivalentSubset`, or `NotContainEquivalentInSubset` from `LTs.TestUtils.FluentAssertions`. Do not use `BeEquivalentTo` on collections.
 
@@ -63,8 +86,8 @@ These rules apply to the entire repository.
 
 - Prefer `LTs.Json` extension methods for JSON parsing and serialization (`ParseAsJToken`, `ToJson`).
 - `Newtonsoft.Json` (`JToken`, `JObject`, `JToken.FromObject`) is the underlying JSON model when `LTs.Json` does not provide a helper.
-- Do not add `System.Text.Json` usage in new production code unless an existing component already depends on it.
-- Prefer `JToken` for tool arguments, planner payloads, and JSON schema metadata at tool boundaries.
+- Do not add `System.Text.Json` usage in new production code unless an existing component in the same area already depends on it.
+- Prefer `JToken` for JSON payloads and schema metadata at tool and API boundaries.
 - Use the same preview version of `LTs.Json` as other LTsoft packages already referenced in the solution.
 
 ## Solution And Project Layout
@@ -87,19 +110,30 @@ These rules apply to the entire repository.
 - Each project folder should contain `GlobalSuppressions.cs`.
 - Use the latest preview version of LTsoft NuGet packages already used by the solution.
 - Do not update unrelated third-party packages unless explicitly asked.
+- Use `<ProjectReference>` only to other projects in this repository under `src\`.
+- Never add `<ProjectReference>` to projects outside this repository, including sibling repositories, absolute paths, or relative paths that escape the solution (for example `..\..\..\SomeOtherRepo\...`).
+- Reference LTsoft libraries from other repositories only through published `<PackageReference>` entries.
 - Do not duplicate `<PackageReference>` entries in `*.test` or `*.test.integration` projects when the same package is already referenced by a production project under test through `<ProjectReference>`.
+- Never add `<InternalsVisibleTo>` in any project for test assemblies. Correctly designed production APIs make it unnecessary.
 - Test projects should reference test-only packages (`LTs.TestUtils`, `xunit`, `Moq`, `coverlet.collector`, `Microsoft.NET.Test.Sdk`) plus `<ProjectReference>` to the project(s) under test.
 - If a test needs behavior from a production dependency, exercise it through the production project's public API instead of adding that package to the test project.
 
 ## Testing Rules
 
 - Add or update unit tests in the matching test project for every production code change in the same pass. Do not defer test coverage to a follow-up.
+- Never use `InternalsVisibleTo` for test assemblies. Tests must exercise the public production API only.
+- Each executable or library should have a matching test project. Do not place executable-specific tests in a sibling project's test assembly.
 - Test classes must always derive from `LTs.TestUtils.Tests.BaseTest`.
 - Tests must always use FluentAssertions.
 - Tests must use `BeEquivalentTo` when validating a single result or object.
 - Do not use `BeEquivalentTo` on collections. Use `ContainExactlyEquivalent`, `ContainEquivalentSubset`, or `NotContainEquivalentInSubset` from `LTs.TestUtils.FluentAssertions` instead.
 - When an object contains a collection property, assert the object with `BeEquivalentTo` (excluding the collection when needed) and assert the collection separately with the appropriate collection extension.
 - Helper classes added only for tests must be internal classes under `<test project>\Infrastructure`, in their own file, not nested inside the test class.
+- Group test methods in `#region` blocks named after the production method or API under test (for example `#region LoadConfiguration`, `#region AddConfiguration`).
+- Do not insert a blank line immediately after a `#region` declaration or immediately before its matching `#endregion`.
+- For composition entry points such as `Program.RegisterConfiguration` and `Program.RegisterServices`, add tests for both configuration registration and service registration.
+- Service registration tests must build the real registration path, resolve services from the container, and verify both resolved dependencies and configuration values.
+- Build test configuration with `AddJsonString()` from `LTs.Configurations.Extensions` instead of `AddInMemoryCollection()` when exercising configuration binding.
 - Keep Arrange, Act, and Assert as separate blocks in each test.
 - Assign parsed, transformed, or extracted values to a local variable before asserting on them.
 - The expression before `.Should()` must be a local variable or parameter name only. Do not chain method calls, property access, indexing, LINQ, casts, or other expressions directly into `.Should()`.
@@ -108,26 +142,18 @@ These rules apply to the entire repository.
 - Use FluentAssertions call style: `subject.Should().Be...()` or `collection.Should().ContainExactlyEquivalent(...)`. Do not add `ShouldBe...()` methods on the subject itself.
 - Prefer combined FluentAssertions checks such as `NotBeNullOrEmpty()` instead of separate `NotBeNull()` and `NotBeEmpty()` (or `NotBeNullOrWhiteSpace()`) on the same subject.
 - Add custom FluentAssertions extensions on the assertions object (for example `JTokenAssertions`), not on the subject type.
-
-## LLM Rules
-
-- The LLM area project owns provider-neutral LLM abstractions and provider implementations.
-- Provider HTTP clients use `LTs.Web.HttpHandler`, not direct `HttpClient` usage.
-- Unit tests for provider HTTP clients mock `HttpHandler`.
-- Unit tests for provider-neutral LLM adapters mock the provider client abstraction.
-- Tests that call a real local LLM server belong in the corresponding `test.integration` project.
-- Use the model name already established by existing integration tests in the repository when adding or updating LLM integration tests.
-
-## Core Rules
-
-- Keep the core area project free of direct LLM provider dependencies unless explicitly requested.
-- Core integration tests should exercise real core orchestration classes together rather than mocking the full agent loop.
-- Use small test-only tools inside integration tests when needed to avoid external dependencies.
+- Keep expected objects visible in the test method. Write the full expected shape inline in `BeEquivalentTo`, `ContainExactlyEquivalent`, or equivalent assertions.
+- Do not hide expected results behind helpers such as `CreateExpectedResult()` or `BuildExpected...()`. Use `Infrastructure/` helpers for setup, normalization, deserialization, or shared assertion options only.
+- Do not assign the expected object to a local variable such as `var expected = ...` when it is only used by `BeEquivalentTo` or `ContainExactlyEquivalent`.
+- Keep scenario literals inline in tests. Do not introduce test-level constants whose only purpose is to hide readable scenario text or expected values.
+- Prefer one `BeEquivalentTo` on the whole result over property-by-property assertion chains when validating a single object outcome.
 
 ## Git And Release Notes
 
 - When completing a set of changes, always provide the commit comment text in the format below, even if the user does not explicitly ask for it.
-- Always append the commit bullet lines to `ReleaseNotes\v0.1.0.md` under `## Changes`.
+- Read the current milestone `## Commit comments` section in `_ignore\Notes\Issue <n> - Milestone <n>.md` for subject prefix, tone, and bullet style when that file exists. Match that section; do not invent format from examples alone.
+- Never create, edit, or delete files under `_ignore\Notes\`. The user maintains those files.
+- Append commit bullet lines to the active release notes file under `ReleaseNotes\` when one exists.
 - Use the LTsoft release notes style: title `# Version X.Y.Z`, one `## Changes` section, and a flat bullet list starting with imperative verbs (`Add`, `Update`, `Refactor`, and so on).
 - Do not add milestone, area, or subsection headings to release notes files.
 - Do not create a new `ReleaseNotes\vX.Y.Z.md` file or update `README.md` change logs until the user explicitly starts a new version release.
@@ -135,21 +161,24 @@ These rules apply to the entire repository.
 
 ## Git Commit Messages
 
-- Use this subject format: `1 - <concise summary>.`
+- Before drafting commit text, run `git status --short` and `git diff` and include every uncommitted file in the working tree, including untracked files.
+- Commit text must describe all non-staged and unstaged changes together; do not limit bullets to the latest conversation slice or the files touched in the current turn.
+- Use this subject format: `<issue> - <concise summary>.`
+- Use the issue number for the subject prefix, not the milestone number. On branches named `<issue>-milestone-<milestone>`, use `<issue>`. In `_ignore\Notes\Issue <n> - Milestone <m>.md`, use `<n>`. When unsure, read recent commits on the current branch and match their prefix.
 - Start the summary with an imperative verb (for example: `Add`, `Update`, `Fix`, `Refactor`, `Introduce`).
 - Keep the subject on one line and end it with a period.
-- Add a blank line after the subject when extra detail is needed.
-- Use `- ` bullet lines for notable changes; keep bullets short and specific.
-- Match the tone and structure of recent commits in this repository.
+- Put `- ` bullet lines immediately after the subject. Do not add a blank line between the subject and the first bullet.
+- Use `- ` bullet lines for notable changes in the current commit only; keep bullets short and specific.
+- Describe only the changes in the current commit. Do not repeat bullets for work already committed on the branch.
+- Match the tone and structure of the current milestone `## Commit comments` section and recent commits on the branch when available.
 
 Example:
 
 ```text
-1 - Add integration tests and repository agent rules.
-
-- Add an integration test project for the core area.
-- Refactor unit tests to use Infrastructure helpers.
-- Register the new test project in the solution.
+42 - Wire host planner through typed host configuration.
+- Remove legacy planner options and pass host configuration through planner composition.
+- Fix configuration registration to honor the sectionName parameter.
+- Update planner and composition tests for host configuration.
 ```
 
 ## Verification
