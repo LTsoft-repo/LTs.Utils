@@ -67,7 +67,7 @@ public class HttpHandler : IHttpHandler
                                                              IImmutableDictionary<string, string> headers,
                                                              string bodyContent,
                                                              MediaType mediaType )
-        => await SendAsync( uri, HttpMethod.Get, parameters, headers, bodyContent, mediaType );
+        => await SendRequestAsync( uri, HttpMethod.Get, parameters, headers, bodyContent, mediaType );
     #endregion
 
     #region Post
@@ -90,7 +90,36 @@ public class HttpHandler : IHttpHandler
                ? throw new ArgumentNullException( nameof( bodyContent ) )
                : mediaType == MediaType.None
                    ? throw new ArgumentException( "The media type must be defined", nameof( mediaType ) )
-                   : await SendAsync( uri, HttpMethod.Post, parameters, headers, bodyContent, mediaType );
+                   : await SendRequestAsync( uri, HttpMethod.Post, parameters, headers, bodyContent, mediaType );
+    #endregion
+
+    #region Send
+    /// <inheritdoc />
+    public virtual async Task<HttpResponseMessage> SendAsync( string uri, HttpMethod httpMethod )
+        => await SendAsync( uri, httpMethod, ImmutableDictionary<string, string>.Empty, ImmutableDictionary<string, string>.Empty, "", MediaType.None );
+
+    /// <inheritdoc />
+    public virtual async Task<HttpResponseMessage> SendAsync( string uri,
+                                                              HttpMethod httpMethod,
+                                                              IImmutableDictionary<string, string> parameters,
+                                                              IImmutableDictionary<string, string> headers )
+        => await SendAsync( uri, httpMethod, parameters, headers, "", MediaType.None );
+
+    /// <inheritdoc />
+    public virtual async Task<HttpResponseMessage> SendAsync( string uri,
+                                                              HttpMethod httpMethod,
+                                                              IImmutableDictionary<string, string> parameters,
+                                                              IImmutableDictionary<string, string> headers,
+                                                              string bodyContent,
+                                                              MediaType mediaType )
+    {
+        if( !string.IsNullOrEmpty( bodyContent ) && mediaType == MediaType.None )
+        {
+            throw new ArgumentException( "The media type must be defined", nameof( mediaType ) );
+        }
+
+        return await SendRequestAsync( uri, httpMethod, parameters, headers, bodyContent, mediaType );
+    }
     #endregion
 
     #region Authorization
@@ -224,12 +253,12 @@ public class HttpHandler : IHttpHandler
     /// <param name="mediaType">The media type of the body content.</param>
     /// <returns>The response to the request as an asynchronous operation.</returns>
     [ UsedImplicitly ]
-    protected virtual async Task<HttpResponseMessage> SendAsync( string uri,
-                                                                 HttpMethod httpMethod,
-                                                                 IImmutableDictionary<string, string> parameters,
-                                                                 IImmutableDictionary<string, string> headers,
-                                                                 string bodyContent,
-                                                                 MediaType mediaType )
+    protected virtual async Task<HttpResponseMessage> SendRequestAsync( string uri,
+                                                                        HttpMethod httpMethod,
+                                                                        IImmutableDictionary<string, string> parameters,
+                                                                        IImmutableDictionary<string, string> headers,
+                                                                        string bodyContent,
+                                                                        MediaType mediaType )
     {
         logger.LogDebug( "Sending request with MediaType {MediaType}: {httpMethod} {Uri}", mediaType, httpMethod, uri );
 
