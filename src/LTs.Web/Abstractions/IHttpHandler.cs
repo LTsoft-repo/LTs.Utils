@@ -70,6 +70,49 @@ public interface IHttpHandler
         MediaType mediaType );
     #endregion
 
+    #region Send
+    /// <summary>
+    ///     Sends an HTTP request with the specified <paramref name="httpMethod" /> to the specified Uri as an asynchronous
+    ///     operation.
+    /// </summary>
+    /// <param name="uri">The Uri the request is sent to.</param>
+    /// <param name="httpMethod">The HTTP method.</param>
+    /// <returns>The response to the request as an asynchronous operation.</returns>
+    Task<HttpResponseMessage> SendAsync( string uri, HttpMethod httpMethod );
+
+    /// <summary>
+    ///     Sends an HTTP request with the specified <paramref name="httpMethod" /> to the specified Uri as an asynchronous
+    ///     operation.
+    /// </summary>
+    /// <param name="uri">The Uri the request is sent to.</param>
+    /// <param name="httpMethod">The HTTP method.</param>
+    /// <param name="parameters">The parameters to send with the request (query string keys-values).</param>
+    /// <param name="headers">The headers to send with the request.</param>
+    /// <returns>The response to the request as an asynchronous operation.</returns>
+    Task<HttpResponseMessage> SendAsync( string uri,
+                                         HttpMethod httpMethod,
+                                         IImmutableDictionary<string, string> parameters,
+                                         IImmutableDictionary<string, string> headers );
+
+    /// <summary>
+    ///     Sends an HTTP request with the specified <paramref name="httpMethod" /> to the specified Uri as an asynchronous
+    ///     operation.
+    /// </summary>
+    /// <param name="uri">The Uri the request is sent to.</param>
+    /// <param name="httpMethod">The HTTP method.</param>
+    /// <param name="parameters">The parameters to send with the request (query string keys-values).</param>
+    /// <param name="headers">The headers to send with the request.</param>
+    /// <param name="bodyContent">The body content to send with the request.</param>
+    /// <param name="mediaType">The media type of the body content.</param>
+    /// <returns>The response to the request as an asynchronous operation.</returns>
+    Task<HttpResponseMessage> SendAsync( string uri,
+                                         HttpMethod httpMethod,
+                                         IImmutableDictionary<string, string> parameters,
+                                         IImmutableDictionary<string, string> headers,
+                                         string bodyContent,
+                                         MediaType mediaType );
+    #endregion
+
     #region Authorization
     /// <summary>
     ///     Gets the access token asynchronously from <paramref name="accessTokenUrl" /> using the specified

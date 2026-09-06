@@ -6,6 +6,10 @@ Set of HTTP client abstractions, configuration models, MIME helpers, and web ext
 This library includes:
 - LTs.Web.Abstractions
   - IHttpHandler
+    - GetAsync()
+    - PostTextAsync()
+    - SendAsync()
+    - GetAccessTokenAsync()
 - LTs.Web.Authorization
   - AuthorizationData
   - GrantType

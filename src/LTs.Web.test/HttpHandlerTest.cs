@@ -438,6 +438,90 @@ public class HttpHandlerTest : BaseTest
     }
     #endregion
 
+    #region SendAsync( uri, httpMethod )
+    [ Fact ]
+    public async Task SendAsync_ValidParameters_Successes()
+    {
+        // Arrange
+        var hostUrl = "https://example.com/api";
+
+        var httpClient = MockHttpClientFactory.CreateToEchoRequest( HttpMethod.Delete, "https://example.com/api", false );
+        var logger = new TestLogger<TestHttpHandler>( TestOutput );
+        IHttpHandler client = new TestHttpHandler( httpClient, logger );
+
+        // Act
+        var requestResponse = await client.SendAsync( hostUrl, HttpMethod.Delete );
+
+        // Assert
+        requestResponse.Should().BeEquivalentTo( new HttpResponseMessage( HttpStatusCode.OK ) );
+    }
+    #endregion
+
+    #region SendAsync( uri, httpMethod, parameters, headers, bodyContent, mediaType )
+    [ Fact ]
+    public async Task SendAsync_FullParameters_ValidParameters_Successes()
+    {
+        // Arrange
+        var hostUrl = "https://example.com/api";
+        var content = @"{""key"": ""value""}";
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "param1", "value1" },
+            { "param2", "value2" }
+        }.ToImmutableDictionary();
+
+        var headers = new Dictionary<string, string>
+        {
+            { "header1", "value1" },
+            { "header2", "value2" }
+        }.ToImmutableDictionary();
+
+        var httpClient = MockHttpClientFactory.CreateToEchoRequest( HttpMethod.Put, "https://example.com/api", true );
+        var logger = new TestLogger<TestHttpHandler>( TestOutput );
+        IHttpHandler client = new TestHttpHandler( httpClient, logger );
+
+        // Act
+        var requestResponse = await client.SendAsync( hostUrl, HttpMethod.Put, parameters, headers, content, MediaType.ApplicationJson );
+
+        // Assert
+        requestResponse.ShouldBeEquivalentTo( new HttpResponseMessage( HttpStatusCode.OK )
+                                              {
+                                                  Content = new StringContent( @"{""key"": ""value""}",
+                                                                               Encoding.UTF8,
+                                                                               MediaType.ApplicationJson.ToMediaTypeString() )
+                                              },
+                                              parameters,
+                                              headers );
+    }
+
+    [ Fact ]
+    public async Task SendAsync_FullParameters_NoMediaType_ThrowsArgumentException()
+    {
+        // Arrange
+        var hostUrl = "https://example.com/api";
+        var content = @"{""key"": ""value""}";
+
+        var httpClient = MockHttpClientFactory.CreateToEchoRequest( HttpMethod.Put, "https://example.com/api", false );
+        var logger = new TestLogger<TestHttpHandler>( TestOutput );
+        IHttpHandler client = new TestHttpHandler( httpClient, logger );
+
+        // Act
+        var act = () => client.SendAsync(
+            hostUrl,
+            HttpMethod.Put,
+            ImmutableDictionary<string, string>.Empty,
+            ImmutableDictionary<string, string>.Empty,
+            content,
+            MediaType.None );
+
+        // Assert
+        await act.Should()
+                 .ThrowAsync<ArgumentException>()
+                 .WithMessage( "The media type must be defined (Parameter 'mediaType')" );
+    }
+    #endregion
+
     #region Authorization
     [ Fact ]
     public async Task GetAccessTokenAsync_ValidParameters_Successes()
