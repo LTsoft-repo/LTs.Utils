@@ -1,0 +1,79 @@
+---
+description: Typed configuration records, loaders, appsettings layout, and Autofac registration conventions.
+alwaysApply: true
+---
+
+# Configuration
+
+Use this pattern for typed settings in host and library projects.
+
+## Configuration Types
+
+- Name typed settings records `XConfiguration`, not `XOptions`.
+- Use `record` types with PascalCase properties and sensible defaults.
+- Expose a public `SectionName` constant when the type maps to an `appsettings.json` section.
+- Place configuration types under a `Configuration/` folder in the owning project or feature area.
+- Keep one configuration type per file; the file name must match the type name.
+- Mark required settings with `[Required]` from `System.ComponentModel.DataAnnotations`.
+- Properties without `[Required]` keep their record defaults when the setting is missing.
+
+## appsettings.json
+
+- Use PascalCase top-level section names (`Host`, `Feature`, `Logging`).
+- Group related settings under nested objects when a feature owns multiple values.
+- Keep baseline values in `appsettings.json`.
+- Support environment overlays, user secrets, and environment variables through `ConfigureDefaultHostApplication`.
+- Pass section names as parameters during registration; do not hard-code section names inside services.
+
+## Generic Loader
+
+- Use `LTs.Configurations.Configurations.TypedConfigurationLoader` for loading and Autofac registration.
+- Do not use `IConfigurationSection.Get<T>()` object binding for typed configuration records.
+- Do not create per-type loader classes when the generic loader is sufficient.
+- Use `LoadConfiguration<T>( IConfiguration configuration, string sectionName )` to load a typed record from a section.
+- Use `AddConfiguration<T>( ContainerBuilder builder, string sectionName )` to register a typed record as an Autofac singleton.
+- Use the `AddConfiguration<T>( ..., Func<T, T>? configure )` overload only when a setting needs explicit post-load transformation that the generic loader does not provide.
+- Required-property failures must throw `ConfigurationException` with the full section path, for example `Host:Model`.
+
+```csharp
+builder.AddConfiguration<HostConfiguration>( HostConfiguration.SectionName );
+builder.AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName );
+```
+
+## Host Registration
+
+- Chain all host configuration registration inside `Program.RegisterConfiguration( ContainerBuilder builder )`.
+- Never create a separate `ConfigurationIoC.cs` or equivalent configuration bootstrap class.
+- Register logging configuration with `RegisterLogConfiguration( sectionName )` from `Program.RegisterConfiguration`.
+- Call `AddConfiguration<T>` from `Program.RegisterConfiguration` with explicit section names.
+- Pass `RegisterConfiguration` directly to `ConfigureDefaultHostApplication`; do not delegate configuration registration to another type.
+
+```csharp
+builder.ConfigureDefaultHostApplication<Program>(
+    string.Empty,
+    RegisterConfiguration,
+    RegisterServices,
+    RegisterWebServices );
+
+public static void RegisterConfiguration( ContainerBuilder builder )
+{
+    builder.RegisterLogConfiguration( "Logging:Files" );
+    builder.AddConfiguration<HostConfiguration>( HostConfiguration.SectionName );
+    builder.AddConfiguration<FeatureConfiguration>( FeatureConfiguration.SectionName );
+}
+```
+
+## Service Registration
+
+- Keep runtime service registration in `DependencyInjection/` extension methods named `Add<Area>...`.
+- Resolve typed configuration inside service registration with `IAutofacConfigurationProvider.Get<T>()`.
+- Do not bind typed configuration through `IServiceCollection.Configure<T>()` in host projects.
+- Register runtime singletons in Autofac, not ad hoc MS.DI registrations in `Program`.
+
+## Testing
+
+- Add tests for generic loader behavior when changing loader rules.
+- Add host tests that verify `Program.RegisterConfiguration` resolves expected typed configuration.
+- Add tests for `[Required]` failures with clear `ConfigurationException` messages.
+- Group test methods in `#region` blocks named after the production method or API under test (for example `#region LoadConfiguration`, `#region AddConfiguration`).
+- Build test configuration with `AddJsonString()` instead of `AddInMemoryCollection()`.

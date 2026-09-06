@@ -1,0 +1,31 @@
+---
+description: Require explicit Program classes and startup methods for entry points.
+alwaysApply: true
+---
+
+# Entry Points
+
+- Never use top-level statements for APIs, Function Apps, console apps, workers, or any executable entry point.
+- Always use an explicit `Program` class with a public `Main` method.
+- Follow `.cursor/rules/host-composition.mdc` for host bootstrap details.
+- Do not delegate `Main` to a separate application startup class.
+
+```csharp
+// BAD - top-level statements
+var builder = WebApplication.CreateBuilder( args );
+var app = builder.Build();
+app.Run();
+
+// BAD - Main delegates everything away
+public static void Main( string[] args )
+    => HostApplication.Run( args );
+
+// GOOD - see host-composition.mdc for the full pattern
+public class Program
+{
+    public static void Main( string[] args )
+    {
+        // try/catch, ConfigureDefaultHostApplication, ConfigurePipeline, app.Run()
+    }
+}
+```

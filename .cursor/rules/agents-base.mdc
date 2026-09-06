@@ -1,0 +1,13 @@
+---
+description: Use AGENTS.md as the base repository rule set for every agent session.
+alwaysApply: true
+---
+
+# Agent Base Rules
+
+Always use `AGENTS.md` at the repository root as the base rule set for this project.
+
+- Read `AGENTS.md` before making edits in this repository.
+- Follow its conventions unless the user explicitly overrides them.
+- When guidance conflicts, prefer `AGENTS.md` for repository-specific style, layout, testing, and workflow decisions.
+- When creating or editing `.cursor/rules/`, keep rules generic and portable unless the user explicitly asks for solution-specific rules. Use placeholders, not production names from this repository.

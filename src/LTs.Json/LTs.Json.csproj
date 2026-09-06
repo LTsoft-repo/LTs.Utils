@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <!--Publish Package START-->
+    <PropertyGroup>
+        <PackageId>LTs.Json</PackageId>
+        <Version>10.0.0-preview4</Version>
+        <Authors>LTsoft</Authors>
+        <Description>LTs.Json</Description>
+        <Copyright>Copyright 2026</Copyright>
+        <RepositoryUrl>https://github.com/LTsoft-repo/LTs.Utils.git</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    <!--Publish Package END-->
+
+    <ItemGroup>
+      <ProjectReference Include="..\LTs.Utils\LTs.Utils.csproj" />
+    </ItemGroup>
+
+</Project>

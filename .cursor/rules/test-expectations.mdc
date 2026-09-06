@@ -1,0 +1,69 @@
+---
+description: Keep test expectations visible in test methods; do not hide expected objects behind helpers.
+globs: src/**/*.test/**/*.cs,src/**/*.test.integration/**/*.cs
+alwaysApply: false
+---
+
+# Visible Test Expectations
+
+When asserting outcomes, the reader must see the expected shape in the test method itself.
+
+## Required
+
+- Write the full expected object inline in `BeEquivalentTo`, `ContainExactlyEquivalent`, or equivalent assertions.
+- Keep scenario literals inline (`"Process this request"`, `"lookup_item"`), not behind test-level constants or factory methods.
+- Put equivalency exclusions in the same assertion when members are runtime-dependent.
+- Use `Infrastructure/` helpers only for setup, normalization, deserialization, or shared assertion options — not for building the expected result object.
+- Shared assertion option helpers are allowed when their summary documents every excluded field.
+
+## Forbidden
+
+- `CreateExpectedResult()`, `BuildExpected...()`, or similar helpers that hide the expected object from the test method.
+- Do not assign the expected object to a local variable such as `var expected = ...` when it is only used by `BeEquivalentTo` or `ContainExactlyEquivalent`.
+- Test-level constants whose only purpose is to hide readable scenario text or expected values.
+- Property-by-property assertion chains when the whole result should be asserted with `BeEquivalentTo`.
+
+## Good
+
+```csharp
+result.Should().BeEquivalentTo(
+    new ProcessResult
+    {
+        Success = true,
+        Summary = "Task completed successfully.",
+        Steps =
+        [
+            new ProcessStep
+            {
+                Index = 0,
+                Description = "Process this request",
+                ActionName = "lookup_item",
+                Input = new Dictionary<string, object?>(),
+                Output = new LookupResult
+                {
+                    ItemName = "example"
+                },
+                Error = null,
+                StartedAt = default,
+                CompletedAt = default
+            }
+        ]
+    },
+    ProcessStepAssertionOptions.ExcludeDynamicValues );
+```
+
+`ExcludeDynamicValues` must document every excluded member in its summary, grouped by type:
+
+- `ProcessStep`: `StartedAt`, `CompletedAt`
+- `LookupResult`: `Timestamp`, `CorrelationId`
+
+## Bad
+
+```csharp
+result.Should().BeEquivalentTo(
+    ProcessExpectations.CreateExpectedResult(),
+    ProcessStepAssertionOptions.ExcludeDynamicValues );
+
+step.ActionName.Should().Be( "lookup_item" );
+step.Description.Should().Be( "Process this request" );
+```

@@ -1,0 +1,62 @@
+# LTs.Utils
+
+## Introduction
+Set of general classes, helpers, and extensions.
+
+This library includes:
+- LTs.Utils.Applications.Abstractions
+  - IAppLogic
+  - IAppLogic&lt;T&gt;
+- LTs.Utils.Collections
+  - AsyncEnumerable&lt;T&gt;
+  - AsyncEnumerator&lt;T&gt;
+  - AsyncQueryProvider&lt;T&gt;
+  - Grouping&lt;TKey, TElement&gt;
+- LTs.Utils.Comparers.Abstractions
+  - IEquivalencyComparer&lt;T&gt;
+- LTs.Utils.Comparers
+  - EquivalencyEqualityComparer&lt;T&gt;
+- LTs.Utils.Extensions.DateTimes
+  - DateTimeExtensions.GetNext()
+  - DateTimeExtensions.GetOffset()
+  - DateTimeExtensions.ToStringSigned()
+  - DateTimeExtensions.ParseAsDateTimeOffset()
+  - DateTimeExtensions.ParseAsDateTime()
+- LTs.Utils.Extensions.Enumerables
+  - AsyncEnumerableExtensions.ToEnumerableAsync()
+- LTs.Utils.Extensions.Exceptions
+  - ArgumentExceptionErrorType
+  - ArgumentExceptionExtensions.GetInformation()
+  - ArgumentExceptionInformation
+  - ExceptionsExtensions.ThrowIfFalse()
+  - ExceptionsExtensions.ThrowIfTrue()
+- LTs.Utils.Extensions.Strings
+  - StringGeneralExtensions.TrimEnd()
+  - StringGeneralExtensions.LowercaseFirst()
+  - StringGeneralExtensions.Capitalize()
+  - StringGeneralExtensions.Find()
+  - StringGeneralExtensions.FindLast()
+  - StringGeneralExtensions.Replace()
+  - StringGeneralExtensions.Split()
+- LTs.Utils.Extensions.Types
+  - TypeExtensions.IsBasicType()
+  - TypeExtensions.IsCollectionType()
+  - TypeExtensions.IsAnonymousType()
+  - TypeExtensions.IsDefault()
+- LTs.Utils.Reflection
+  - ReflectionAttributeExtensions.HasAttribute&lt;T&gt;()
+  - ReflectionAttributeExtensions.HasAttribute()
+  - ReflectionAttributeExtensions.FindPropertiesWithAttribute&lt;T&gt;()
+  - ReflectionAttributeExtensions.FindPropertiesWithAttribute()
+  - ReflectionExtensions.GetFieldValue&lt;T&gt;()
+  - ReflectionExtensions.GetPropertyValue&lt;T&gt;()
+  - ReflectionExtensions.GetDataMemberValue&lt;T&gt;()
+  - ReflectionHelper.CreateInstance&lt;T&gt;()
+  - ReflectionHelper.CreateInstance&lt;T&gt;( params object[] )
+  - ReflectionPropertiesExtensions.CopyPropertiesFrom()
+  - ReflectionPropertiesExtensions.GetProperty()
+  - ReflectionPropertiesExtensions.SetProperty()
+- LTs.Utils
+  - EnvironmentUtils.AzureFunctionsEnvironmentVariable
+  - EnvironmentUtils.AspNetCoreEnvironmentVariable
+  - EnvironmentUtils.GetEnvironmentName()
