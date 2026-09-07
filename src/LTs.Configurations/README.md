@@ -19,6 +19,7 @@ This library includes:
   - ScheduleConfigurationRegistrationExtensions.AddScheduleConfiguration&lt;T&gt;()
   - TypedConfigurationLoader.LoadConfiguration&lt;T&gt;()
   - TypedConfigurationLoader.AddConfiguration&lt;T&gt;()
+  - TypedConfigurationLoader supports nested objects, arrays, and collections
 - LTs.Configurations.DependencyInjection
   - RegistrationExtensions.AddConfigurationProvider()
 - LTs.Configurations.Exceptions

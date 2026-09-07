@@ -134,16 +134,7 @@ public static class TypedConfigurationLoader
     }
 
     private static bool HasConfiguredValue( IConfiguration section, string propertyName )
-    {
-        var propertySection = section.GetSection( propertyName );
-
-        if( propertySection.GetChildren().Any() )
-        {
-            return true;
-        }
-
-        return section[ propertyName ] is not null;
-    }
+        => section.GetSection( propertyName ).Exists();
 
     private static void ValidateRequiredValue( IConfiguration section,
                                                string propertyName,
@@ -168,6 +159,7 @@ public static class TypedConfigurationLoader
                                                  Type propertyType )
     {
         var underlyingType = Nullable.GetUnderlyingType( propertyType ) ?? propertyType;
+        var propertySection = section.GetSection( propertyName );
 
         try
         {
@@ -199,15 +191,12 @@ public static class TypedConfigurationLoader
                 return section.GetValue( underlyingType, propertyName );
             }
 
-            var nestedSection = section.GetSection( propertyName );
-
-            if( nestedSection.GetChildren().Any() )
+            if( underlyingType.IsCollectionType() )
             {
-                throw new ConfigurationException(
-                    $"Configuration property '{section.GetSectionPath( propertyName )}' of type '{propertyType.Name}' is not supported." );
+                return ConvertCollectionValue( propertyType, propertySection );
             }
 
-            return section.GetValue( underlyingType, propertyName );
+            return LoadNestedConfiguration( propertySection, underlyingType );
         }
         catch( ConfigurationException )
         {
@@ -218,6 +207,58 @@ public static class TypedConfigurationLoader
             throw new ConfigurationException(
                 $"Configuration parameter '{section.GetSectionPath( propertyName )}' is not of type '{underlyingType.Name}'.\n" +
                 $"Exception message: {ex.Message}" );
+        }
+    }
+
+    private static object? ConvertCollectionValue( Type propertyType,
+                                                   IConfigurationSection propertySection )
+    {
+        if( propertySection.Value is not null
+            && !propertySection.GetChildren().Any() )
+        {
+            throw new ConfigurationException( $"Can not convert to type '{propertyType.Name}'" );
+        }
+
+        var value = propertySection.Get( propertyType );
+
+        if( value is not null && value.IsDefault() )
+        {
+            throw new ConfigurationException( $"Can not convert to type '{propertyType.Name}'" );
+        }
+
+        return value;
+    }
+
+    private static object LoadNestedConfiguration( IConfiguration section, Type configurationType )
+    {
+        var loadMethod = typeof( TypedConfigurationLoader ).GetMethod(
+            nameof( LoadConfiguration ),
+            BindingFlags.Public | BindingFlags.Static,
+            binder: null,
+            types: [ typeof( IConfiguration ) ],
+            modifiers: null );
+
+        if( loadMethod is null )
+        {
+            throw new ConfigurationException( $"Configuration type '{configurationType.Name}' is not supported." );
+        }
+
+        var genericLoadMethod = loadMethod.MakeGenericMethod( configurationType );
+
+        try
+        {
+            var result = genericLoadMethod.Invoke( null, [ section ] );
+
+            if( result is null )
+            {
+                throw new ConfigurationException( $"Configuration type '{configurationType.Name}' is not supported." );
+            }
+
+            return result;
+        }
+        catch( TargetInvocationException ex ) when( ex.InnerException is ConfigurationException configurationException )
+        {
+            throw configurationException;
         }
     }
 }

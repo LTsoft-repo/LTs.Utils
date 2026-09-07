@@ -90,6 +90,91 @@ public class TypedConfigurationLoaderTest : BaseTest
     }
 
     [ Fact ]
+    public void LoadConfiguration_BindsNestedObjectsCollectionsAndArrays()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Complex": {
+                                                "Nested": {
+                                                  "RequiredValue": "nested-value",
+                                                  "OptionalCount": 7
+                                                },
+                                                "Tags": [ "alpha", "beta" ],
+                                                "Items": [
+                                                  { "Name": "first" },
+                                                  { "Name": "second" }
+                                                ]
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<ComplexConfiguration>( "Complex" );
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new ComplexConfiguration
+            {
+                Nested = new NestedConfiguration
+                {
+                    RequiredValue = "nested-value",
+                    OptionalCount = 7
+                },
+                Tags = [ "alpha", "beta" ],
+                Items =
+                [
+                    new ItemConfiguration { Name = "first" },
+                    new ItemConfiguration { Name = "second" }
+                ]
+            } );
+    }
+
+    [ Theory ]
+    [ InlineData( """
+                  {
+                    "Complex": {
+                      "Nested": {
+                        "OptionalCount": 7
+                      }
+                    },
+                    "Items": [
+                      { "Name": "first" },
+                      { "Name": "second" }
+                    ]
+                  }
+                  """,
+                  "Complex:Nested:RequiredValue" ) ]
+    [ InlineData( """
+                  {
+                    "Complex": {
+                      "Nested": {
+                        "RequiredValue": "nested-value",
+                        "OptionalCount": 7
+                      },
+                      "Tags": [ "alpha", "beta" ]
+                    }
+                  }
+                  """,
+                  "Complex:Items" ) ]
+    public void LoadConfiguration_WhenNestedRequiredPropertyIsMissing_Throws( string json, string parameterName )
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( json )
+                            .Build();
+
+        // Act
+        var act = () => configuration.LoadConfiguration<ComplexConfiguration>( "Complex" );
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage( $"Configuration parameter '{parameterName}' not defined." );
+    }
+
+    [ Fact ]
     public void LoadConfiguration_WhenSectionIsMissing_ThrowsConfigurationException()
     {
         // Arrange
@@ -137,6 +222,50 @@ public class TypedConfigurationLoaderTest : BaseTest
             new SampleConfiguration
             {
                 RequiredName = "primary"
+            } );
+    }
+
+    [ Fact ]
+    public void AddConfiguration_ResolvesComplexConfiguration()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Complex": {
+                                                "Nested": {
+                                                  "RequiredValue": "nested-value"
+                                                },
+                                                "Tags": [ "alpha" ],
+                                                "Items": [ { "Name": "second" } ]
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        var containerBuilder = new ContainerBuilder();
+
+        containerBuilder.RegisterInstance( configuration )
+                        .As<IConfiguration>()
+                        .SingleInstance();
+
+        containerBuilder.AddConfiguration<ComplexConfiguration>( "Complex" );
+
+        using var container = containerBuilder.Build();
+
+        // Act
+        var result = container.Resolve<ComplexConfiguration>();
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new ComplexConfiguration
+            {
+                Nested = new NestedConfiguration
+                {
+                    RequiredValue = "nested-value"
+                },
+                Tags = [ "alpha" ],
+                Items = [ new ItemConfiguration { Name = "second" } ]
             } );
     }
 
