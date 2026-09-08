@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using LTs.Configurations.Attributes;
 
 namespace LTs.Configurations.test.Infrastructure;
 

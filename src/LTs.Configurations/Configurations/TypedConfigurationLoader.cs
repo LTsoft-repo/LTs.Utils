@@ -1,6 +1,7 @@
-using System.ComponentModel.DataAnnotations;
+using System.Collections;
 using System.Reflection;
 using Autofac;
+using LTs.Configurations.Attributes;
 using LTs.Configurations.Exceptions;
 using LTs.Configurations.Extensions;
 using LTs.Utils.Extensions.Types;
@@ -26,12 +27,9 @@ public static class TypedConfigurationLoader
     {
         var section = configuration.GetSection( sectionName );
 
-        if( !section.Exists() )
-        {
-            throw new ConfigurationException( $"Configuration section '{sectionName}' not defined." );
-        }
-
-        return section.LoadConfiguration<T>();
+        return !section.Exists()
+                   ? throw new ConfigurationException( $"Configuration section '{sectionName}' not defined." )
+                   : section.LoadConfiguration<T>();
     }
 
     /// <summary>
@@ -48,9 +46,9 @@ public static class TypedConfigurationLoader
 
         foreach( var property in properties )
         {
-            var isRequired = Attribute.IsDefined( property, typeof( RequiredAttribute ) );
+            var (isRequired, allowEmpty) = GetRequiredMetadata( property );
             var defaultValue = property.GetValue( instance );
-            var value = ReadPropertyValue( section, property, isRequired, defaultValue );
+            var value = ReadPropertyValue( section, property, isRequired, allowEmpty, defaultValue );
 
             property.SetValue( instance, value );
         }
@@ -102,12 +100,21 @@ public static class TypedConfigurationLoader
 
     private static IEnumerable<PropertyInfo> GetConfigurationProperties( Type configurationType )
         => configurationType.GetProperties( BindingFlags.Instance | BindingFlags.Public )
-                            .Where( property => property.GetMethod is { IsStatic: false } &&
-                                                property.SetMethod is not null );
+                            .Where( property => property is { GetMethod.IsStatic: false, SetMethod: not null } );
+
+    private static (bool IsRequired, bool AllowEmpty) GetRequiredMetadata( PropertyInfo property )
+    {
+        var required = property.GetCustomAttribute<RequiredAttribute>();
+
+        return required is null
+                   ? ( false, false )
+                   : ( true, required.AllowEmpty );
+    }
 
     private static object? ReadPropertyValue( IConfiguration section,
                                               PropertyInfo property,
                                               bool isRequired,
+                                              bool allowEmpty,
                                               object? defaultValue )
     {
         var propertyName = property.Name;
@@ -115,7 +122,7 @@ public static class TypedConfigurationLoader
 
         if( !HasConfiguredValue( section, propertyName ) )
         {
-            if( isRequired )
+            if( isRequired && !allowEmpty )
             {
                 ConfigurationException.ThrowIfNull( null, propertyName, section );
             }
@@ -127,19 +134,38 @@ public static class TypedConfigurationLoader
 
         if( isRequired )
         {
-            ValidateRequiredValue( section, propertyName, propertyType, value );
+            ValidateRequiredValue( section, propertyName, propertyType, value, allowEmpty );
         }
 
         return value ?? defaultValue;
     }
 
     private static bool HasConfiguredValue( IConfiguration section, string propertyName )
-        => section.GetSection( propertyName ).Exists();
+    {
+        var propertySection = section.GetSection( propertyName );
+
+        if( propertySection.Exists() )
+        {
+            return true;
+        }
+
+        if( section.GetChildren().Any( child =>
+                                           string.Equals( child.Key, propertyName, StringComparison.OrdinalIgnoreCase ) ) )
+        {
+            return true;
+        }
+
+        var propertyPath = section.GetSectionPath( propertyName );
+
+        return section.AsEnumerable().Any( pair =>
+                                               string.Equals( pair.Key, propertyPath, StringComparison.OrdinalIgnoreCase ) );
+    }
 
     private static void ValidateRequiredValue( IConfiguration section,
                                                string propertyName,
                                                Type propertyType,
-                                               object? value )
+                                               object? value,
+                                               bool allowEmpty )
     {
         var underlyingType = Nullable.GetUnderlyingType( propertyType ) ?? propertyType;
 
@@ -148,11 +174,31 @@ public static class TypedConfigurationLoader
             ConfigurationException.ThrowIfNull( null, propertyName, section );
         }
 
-        if( underlyingType == typeof( string ) && string.IsNullOrWhiteSpace( (string?)value ) )
+        if( underlyingType == typeof( string ) )
         {
+            if( allowEmpty )
+            {
+                return;
+            }
+
             ConfigurationException.ThrowIfNullOrWhiteSpace( (string?)value, propertyName, section );
+
+            return;
+        }
+
+        if( underlyingType.IsCollectionType() && !allowEmpty && IsEmptyCollection( value! ) )
+        {
+            ConfigurationException.ThrowIfNullOrEmpty( string.Empty, propertyName, section );
         }
     }
+
+    private static bool IsEmptyCollection( object value )
+        => value switch
+        {
+            Array array => array.Length == 0,
+            ICollection collection => collection.Count == 0,
+            _ => false
+        };
 
     private static object? ConvertPropertyValue( IConfiguration section,
                                                  string propertyName,
@@ -191,12 +237,9 @@ public static class TypedConfigurationLoader
                 return section.GetValue( underlyingType, propertyName );
             }
 
-            if( underlyingType.IsCollectionType() )
-            {
-                return ConvertCollectionValue( propertyType, propertySection );
-            }
-
-            return LoadNestedConfiguration( propertySection, underlyingType );
+            return underlyingType.IsCollectionType()
+                       ? ConvertCollectionValue( propertyType, propertySection )
+                       : LoadNestedConfiguration( propertySection, underlyingType );
         }
         catch( ConfigurationException )
         {
@@ -210,23 +253,35 @@ public static class TypedConfigurationLoader
         }
     }
 
-    private static object? ConvertCollectionValue( Type propertyType,
-                                                   IConfigurationSection propertySection )
+    private static object ConvertCollectionValue( Type propertyType,
+                                                  IConfigurationSection propertySection )
     {
         if( propertySection.Value is not null
-            && !propertySection.GetChildren().Any() )
+            && !propertySection.GetChildren().Any()
+            && !string.IsNullOrEmpty( propertySection.Value ) )
         {
             throw new ConfigurationException( $"Can not convert to type '{propertyType.Name}'" );
         }
 
-        var value = propertySection.Get( propertyType );
+        return propertySection.Get( propertyType ) ?? CreateEmptyCollection( propertyType );
+    }
 
-        if( value is not null && value.IsDefault() )
+    private static object CreateEmptyCollection( Type propertyType )
+    {
+        if( propertyType.IsArray )
         {
-            throw new ConfigurationException( $"Can not convert to type '{propertyType.Name}'" );
+            return Array.CreateInstance( propertyType.GetElementType()!, 0 );
         }
 
-        return value;
+        if( propertyType.IsGenericType )
+        {
+            var elementType = propertyType.GetGenericArguments()[ 0 ];
+            var listType = typeof( List<> ).MakeGenericType( elementType );
+
+            return Activator.CreateInstance( listType )!;
+        }
+
+        throw new ConfigurationException( $"Configuration type '{propertyType.Name}' is not supported." );
     }
 
     private static object LoadNestedConfiguration( IConfiguration section, Type configurationType )
@@ -234,9 +289,9 @@ public static class TypedConfigurationLoader
         var loadMethod = typeof( TypedConfigurationLoader ).GetMethod(
             nameof( LoadConfiguration ),
             BindingFlags.Public | BindingFlags.Static,
-            binder: null,
-            types: [ typeof( IConfiguration ) ],
-            modifiers: null );
+            null,
+            [ typeof( IConfiguration ) ],
+            null );
 
         if( loadMethod is null )
         {
@@ -249,12 +304,8 @@ public static class TypedConfigurationLoader
         {
             var result = genericLoadMethod.Invoke( null, [ section ] );
 
-            if( result is null )
-            {
-                throw new ConfigurationException( $"Configuration type '{configurationType.Name}' is not supported." );
-            }
-
-            return result;
+            return result
+                   ?? throw new ConfigurationException( $"Configuration type '{configurationType.Name}' is not supported." );
         }
         catch( TargetInvocationException ex ) when( ex.InnerException is ConfigurationException configurationException )
         {

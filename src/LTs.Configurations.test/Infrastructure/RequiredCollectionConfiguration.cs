@@ -2,12 +2,8 @@ using LTs.Configurations.Attributes;
 
 namespace LTs.Configurations.test.Infrastructure;
 
-internal record ComplexConfiguration
+internal record RequiredCollectionConfiguration
 {
-    public NestedConfiguration Nested { get; init; } = new();
-
-    public string[] Tags { get; init; } = [ ];
-
     [ Required ]
     public IReadOnlyList<ItemConfiguration> Items { get; init; } = [ ];
 }

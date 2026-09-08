@@ -14,7 +14,9 @@ Use this pattern for typed settings in host and library projects.
 - Expose a public `SectionName` constant when the type maps to an `appsettings.json` section.
 - Place configuration types under a `Configuration/` folder in the owning project or feature area.
 - Keep one configuration type per file; the file name must match the type name.
-- Mark required settings with `[Required]` from `System.ComponentModel.DataAnnotations`.
+- Mark required settings with `[Required]` from `LTs.Configurations.Attributes`.
+- Use `[Required(AllowEmpty = true)]` when a required string or collection may be empty.
+- Do not use `System.ComponentModel.DataAnnotations.RequiredAttribute` on typed configuration records.
 - Properties without `[Required]` keep their record defaults when the setting is missing.
 
 ## appsettings.json

@@ -90,6 +90,83 @@ public class TypedConfigurationLoaderTest : BaseTest
     }
 
     [ Fact ]
+    public void LoadConfiguration_WhenRequiredStringIsEmpty_Throws()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "RequiredString": {
+                                                "RequiredValue": ""
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var act = () => configuration.LoadConfiguration<RequiredStringConfiguration>( "RequiredString" );
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage( "Configuration parameter 'RequiredString:RequiredValue' cannot be null or empty." );
+    }
+
+    [ Theory ]
+    [ InlineData( "[ ]" ) ]
+    [ InlineData( "null" ) ]
+    public void LoadConfiguration_AllowsEmptyRequiredValues_WhenRequiredAllowEmptyIsTrue( string collectionContent )
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( $$"""
+                                              {
+                                                "AllowEmpty": {
+                                                  "RequiredName": "",
+                                                  "Items": {{collectionContent}}
+                                                }
+                                              }
+                                              """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<AllowEmptyConfiguration>( "AllowEmpty" );
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new AllowEmptyConfiguration
+            {
+                RequiredName = string.Empty,
+                Items = [ ],
+                ItemsNotRequired = [ ],
+                ItemsNull = null
+            } );
+    }
+
+    [ Theory ]
+    [ InlineData( "[ ]" ) ]
+    [ InlineData( "null" ) ]
+    public void LoadConfiguration_WhenRequiredCollectionIsEmpty_Throws( string collectionContent )
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( $$"""
+                                              {
+                                                "RequiredCollection": {
+                                                  "Items": {{collectionContent}}
+                                                }
+                                              }
+                                              """ )
+                            .Build();
+
+        // Act
+        var act = () => configuration.LoadConfiguration<RequiredCollectionConfiguration>( "RequiredCollection" );
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage( "Configuration parameter 'RequiredCollection:Items' cannot be null or empty." );
+    }
+
+    [ Fact ]
     public void LoadConfiguration_BindsNestedObjectsCollectionsAndArrays()
     {
         // Arrange
