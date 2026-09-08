@@ -1,6 +1,6 @@
-﻿using LTs.TestUtils.Loggers;
+﻿using LTs.TestUtils.FluentAssertions;
+using LTs.TestUtils.Loggers;
 using Microsoft.Extensions.Logging;
-using Xunit.Sdk;
 
 namespace LTs.TestUtils.test.Loggers;
 
@@ -29,7 +29,7 @@ public class TestLoggerTest
                     ( state, exception ) => "{state}" + exception == null ? "" : Environment.NewLine + exception );
 
         // Assert
-        ( (TestOutputHelper)testOutput ).Output.Should().Contain( "Test log" );
+        testOutput.Should().HaveMessage().Containing( "Test log" );
     }
     #endregion
 
@@ -50,8 +50,9 @@ public class TestLoggerTest
                     ( state, exception ) => "{state}" + exception == null ? "" : Environment.NewLine + exception );
 
         // Assert
-        ( (TestOutputHelper)testOutput ).Output.Should().Contain( "Test log" )
-                                        .And.Contain( typeof( TestLoggerTest ).FullName );
+        testOutput.Should().HaveMessage().Containing( "Test log" );
+
+        testOutput.Should().HaveMessage().Containing( typeof( TestLoggerTest ).FullName! );
     }
     #endregion
 }
