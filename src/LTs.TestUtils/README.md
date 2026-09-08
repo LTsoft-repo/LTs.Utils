@@ -17,6 +17,12 @@ This library includes:
   - JsonAssertionsExtensions.BeSameJsonAs()
   - JsonAssertionsExtensions.NotBeSameJsonAs()
   - JsonAssertionsExtensions.BeSameJsonIgnoringExtraFieldsAs()
+  - TestOutputAssertions.HaveMessage()
+  - TestOutputAssertions.NotHaveMessage()
+  - TestOutputMessageAssertions.Containing()
+  - InMemoryLoggerAssertions.HaveMessage()
+  - InMemoryLoggerAssertions.NotHaveMessage()
+  - InMemoryLoggerMessageAssertions.Containing()
 - LTs.TestUtils.Loggers.DependencyInjection
   - RegistrationExtensions.AddTestLogger()
 - LTs.TestUtils.Loggers
