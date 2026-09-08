@@ -8,18 +8,18 @@ using Microsoft.Extensions.Logging;
 namespace LTs.TestUtils.FluentAssertions;
 
 /// <summary>
-///     Message assertions for <see cref="InMemoryLoggerAssertions" />.
+///     Message assertions for <see cref="LoggerAssertions" />.
 /// </summary>
-public class InMemoryLoggerMessageAssertions
+public class LoggerMessageAssertions
 {
     /// <summary>
-    ///     Creates a new instance of <see cref="InMemoryLoggerMessageAssertions" />.
+    ///     Creates a new instance of <see cref="LoggerMessageAssertions" />.
     /// </summary>
-    /// <param name="parent">The parent in-memory logger assertions.</param>
+    /// <param name="parent">The parent logger assertions.</param>
     /// <param name="negated">Whether the assertion is negated.</param>
     /// <param name="logLevel">The optional log level filter.</param>
     // ReSharper disable once ConvertToPrimaryConstructor
-    public InMemoryLoggerMessageAssertions( InMemoryLoggerAssertions parent, bool negated, LogLevel? logLevel )
+    public LoggerMessageAssertions( LoggerAssertions parent, bool negated, LogLevel? logLevel )
     {
         Parent = parent;
         Negated = negated;
@@ -27,7 +27,7 @@ public class InMemoryLoggerMessageAssertions
     }
 
     [ UsedImplicitly ]
-    private InMemoryLoggerAssertions Parent { get; }
+    private LoggerAssertions Parent { get; }
 
     [ UsedImplicitly ]
     private bool Negated { get; }
@@ -48,9 +48,9 @@ public class InMemoryLoggerMessageAssertions
     ///     Zero or more objects to format using the placeholders in <paramref name="because" />.
     /// </param>
     [ UsedImplicitly ]
-    public AndConstraint<InMemoryLoggerAssertions> Containing( string expectedMessage,
-                                                               string because = "",
-                                                               params object[] becauseArgs )
+    public AndConstraint<LoggerAssertions> Containing( string expectedMessage,
+                                                       string because = "",
+                                                       params object[] becauseArgs )
     {
         var hasMatch = Parent.Subject.Messages.Any( m => MessageMatches( m, expectedMessage ) );
 
@@ -69,7 +69,7 @@ public class InMemoryLoggerMessageAssertions
                    .FailWith( GetFailureMessage( expectedMessage ), GetFailureArguments( expectedMessage ) );
         }
 
-        return new AndConstraint<InMemoryLoggerAssertions>( Parent );
+        return new AndConstraint<LoggerAssertions>( Parent );
     }
 
     private bool MessageMatches( Loggers.LoggerMessage message, string expectedMessage )

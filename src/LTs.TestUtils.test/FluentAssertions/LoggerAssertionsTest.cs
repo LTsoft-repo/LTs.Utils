@@ -1,5 +1,7 @@
 using LTs.TestUtils.FluentAssertions;
 using LTs.TestUtils.Loggers;
+using LTs.TestUtils.test.FluentAssertions.Infrastructure;
+using LTs.TestUtils.Tests;
 using Microsoft.Extensions.Logging;
 using Xunit.Sdk;
 
@@ -7,14 +9,75 @@ using Xunit.Sdk;
 
 namespace LTs.TestUtils.test.FluentAssertions;
 
-public class InMemoryLoggerAssertionsTest
+public class LoggerAssertionsTest : BaseTest
 {
+    public LoggerAssertionsTest( ITestOutputHelper testOutput )
+        : base( testOutput ) { }
+
+    #region Should
+    [ Fact ]
+    public void Should_WithInMemoryLogger_HaveMessage_Containing_Succeeds()
+    {
+        // Arrange
+        ILogger logger = new InMemoryLogger();
+        logger.LogInformation( "Application started." );
+
+        // Act
+        var act = () => logger.Should().HaveMessage().Containing( "Application started." );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void Should_WithInMemoryLoggerT_HaveMessage_Containing_Succeeds()
+    {
+        // Arrange
+        ILogger<LoggerAssertionsTest> logger = new InMemoryLogger<LoggerAssertionsTest>();
+        logger.LogInformation( "Application started." );
+
+        // Act
+        var act = () => logger.Should().HaveMessage().Containing( "Application started." );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void Should_WithTestLoggerT_NotHaveMessage_AtLogLevel_Containing_Succeeds()
+    {
+        // Arrange
+        ILogger<LoggerAssertionsTest> logger = new TestLogger<LoggerAssertionsTest>( TestOutput );
+        logger.LogInformation( "Application started." );
+
+        // Act
+        var act = () => logger.Should().NotHaveMessage( LogLevel.Error ).Containing( string.Empty, because: "no error should occur" );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void Should_WithUnsupportedLogger_Throws()
+    {
+        // Arrange
+        ILogger logger = new UnsupportedLogger();
+
+        // Act
+        var act = () => logger.Should().HaveMessage().Containing( "Application started." );
+
+        // Assert
+        act.Should().ThrowExactly<InvalidOperationException>()
+           .WithMessage( "Cannot assert log messages on *UnsupportedLogger*. Use an ILogger implementation that derives from InMemoryLogger, such as InMemoryLogger<T> or TestLogger<T>." );
+    }
+    #endregion
+
     #region HaveMessage
     [ Fact ]
     public void HaveMessage_Containing_WhenMessageIsPresent_Succeeds()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogInformation( "Application started." );
 
         // Act
@@ -28,7 +91,7 @@ public class InMemoryLoggerAssertionsTest
     public void HaveMessage_Containing_WhenMessageIsMissing_Throws()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogInformation( "Something else." );
 
         // Act
@@ -43,7 +106,7 @@ public class InMemoryLoggerAssertionsTest
     public void HaveMessage_AtLogLevel_Containing_WhenMessageIsPresent_Succeeds()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogInformation( "Application started." );
 
         // Act
@@ -59,7 +122,7 @@ public class InMemoryLoggerAssertionsTest
     public void NotHaveMessage_Containing_WhenMessageIsAbsent_Succeeds()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogInformation( "Application started." );
 
         // Act
@@ -73,7 +136,7 @@ public class InMemoryLoggerAssertionsTest
     public void NotHaveMessage_Containing_WhenMessageIsPresent_Throws()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogInformation( "Application started." );
 
         // Act
@@ -88,7 +151,7 @@ public class InMemoryLoggerAssertionsTest
     public void NotHaveMessage_AtLogLevel_Containing_WhenLogLevelIsAbsent_Succeeds()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogInformation( "Application started." );
 
         // Act
@@ -102,7 +165,7 @@ public class InMemoryLoggerAssertionsTest
     public void NotHaveMessage_AtLogLevel_Containing_WhenLogLevelIsPresentWithoutSubstring_Throws()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogError( "Application failed." );
 
         // Act
@@ -117,7 +180,7 @@ public class InMemoryLoggerAssertionsTest
     public void NotHaveMessage_AtLogLevel_Containing_WhenLogLevelAndSubstringMatch_Throws()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogError( "Application failed." );
 
         // Act
@@ -132,7 +195,7 @@ public class InMemoryLoggerAssertionsTest
     public void NotHaveMessage_AtLogLevel_Containing_WhenLogLevelMatchesButSubstringDoesNot_Succeeds()
     {
         // Arrange
-        var logger = new InMemoryLogger();
+        ILogger logger = new InMemoryLogger();
         logger.LogError( "Application failed." );
 
         // Act

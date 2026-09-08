@@ -6,20 +6,20 @@ using Microsoft.Extensions.Logging;
 namespace LTs.TestUtils.FluentAssertions;
 
 /// <summary>
-///     Assertions for <see cref="InMemoryLogger" />.
+///     Assertions for <see cref="ILogger" /> implementations backed by <see cref="InMemoryLogger" />.
 /// </summary>
-public class InMemoryLoggerAssertions
+public class LoggerAssertions
 {
     /// <summary>
-    ///     Creates a new instance of <see cref="InMemoryLoggerAssertions" />.
+    ///     Creates a new instance of <see cref="LoggerAssertions" />.
     /// </summary>
-    /// <param name="subject">The in-memory logger to assert on.</param>
+    /// <param name="subject">The logger to assert on.</param>
     // ReSharper disable once ConvertToPrimaryConstructor
-    public InMemoryLoggerAssertions( InMemoryLogger subject )
+    public LoggerAssertions( InMemoryLogger subject )
         => Subject = subject;
 
     /// <summary>
-    ///     Gets the in-memory logger subject.
+    ///     Gets the logger subject.
     /// </summary>
     [ UsedImplicitly ]
     public InMemoryLogger Subject { get; }
@@ -28,7 +28,7 @@ public class InMemoryLoggerAssertions
     ///     Returns assertions for messages that should be present in the logger.
     /// </summary>
     [ UsedImplicitly ]
-    public InMemoryLoggerMessageAssertions HaveMessage()
+    public LoggerMessageAssertions HaveMessage()
         => new( this, false, null );
 
     /// <summary>
@@ -36,14 +36,14 @@ public class InMemoryLoggerAssertions
     /// </summary>
     /// <param name="logLevel">The expected log level.</param>
     [ UsedImplicitly ]
-    public InMemoryLoggerMessageAssertions HaveMessage( LogLevel logLevel )
+    public LoggerMessageAssertions HaveMessage( LogLevel logLevel )
         => new( this, false, logLevel );
 
     /// <summary>
     ///     Returns assertions for messages that should not be present in the logger.
     /// </summary>
     [ UsedImplicitly ]
-    public InMemoryLoggerMessageAssertions NotHaveMessage()
+    public LoggerMessageAssertions NotHaveMessage()
         => new( this, true, null );
 
     /// <summary>
@@ -51,6 +51,6 @@ public class InMemoryLoggerAssertions
     /// </summary>
     /// <param name="logLevel">The unexpected log level.</param>
     [ UsedImplicitly ]
-    public InMemoryLoggerMessageAssertions NotHaveMessage( LogLevel logLevel )
+    public LoggerMessageAssertions NotHaveMessage( LogLevel logLevel )
         => new( this, true, logLevel );
 }
