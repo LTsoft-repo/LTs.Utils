@@ -2,8 +2,8 @@ using LTs.Configurations.Attributes;
 
 namespace LTs.Configurations.test.Infrastructure;
 
-internal record RequiredStringConfiguration
+internal record ItemConfiguration
 {
     [ Required ]
-    public string RequiredValue { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 }

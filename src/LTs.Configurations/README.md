@@ -7,6 +7,8 @@ This library includes:
 - LTs.Configurations.Abstractions
   - IAutofacConfigurationProvider
   - IConfigurationProvider
+- LTs.Configurations.Attributes
+  - RequiredAttribute
 - LTs.Configurations.Configurations
   - AppConfigConfiguration
   - AppConfigConfigurationLoader.LoadAppConfigConfiguration()
@@ -19,6 +21,8 @@ This library includes:
   - ScheduleConfigurationRegistrationExtensions.AddScheduleConfiguration&lt;T&gt;()
   - TypedConfigurationLoader.LoadConfiguration&lt;T&gt;()
   - TypedConfigurationLoader.AddConfiguration&lt;T&gt;()
+  - TypedConfigurationLoader supports nested objects, arrays, and collections
+  - TypedConfigurationLoader honors `[Required(AllowEmpty = true)]` for empty required strings and collections
 - LTs.Configurations.DependencyInjection
   - RegistrationExtensions.AddConfigurationProvider()
 - LTs.Configurations.Exceptions

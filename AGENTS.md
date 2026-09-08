@@ -16,6 +16,7 @@ These rules apply to the entire repository.
 - Do not create solution maps, project inventories, or area-specific rule files (for example `*-project.mdc`) unless the user explicitly requests them.
 - Executable and host rules must be copyable to another LTsoft repo with only placeholder renames and a new `*.Host` implementation.
 
+## Before Editing
 
 - Read the relevant code first and follow the existing structure.
 - Check `git status --short` before edits and do not overwrite or revert user changes.
@@ -150,9 +151,10 @@ These rules apply to the entire repository.
 
 ## Git And Release Notes
 
+- When the user asks for a management, delivery, or branch report, create a canvas beside the chat and save the visual PDF to `_ignore\Reports\` only. Label solo-developer hours as **equivalent effort range** (judgment from scope and complexity, not a LOC formula) and include methodology assumptions on the PDF.
+- Never create, edit, or delete files under `_ignore\Notes\`. The user maintains those files.
 - When completing a set of changes, always provide the commit comment text in the format below, even if the user does not explicitly ask for it.
 - Read the current milestone `## Commit comments` section in `_ignore\Notes\Issue <n> - Milestone <n>.md` for subject prefix, tone, and bullet style when that file exists. Match that section; do not invent format from examples alone.
-- Never create, edit, or delete files under `_ignore\Notes\`. The user maintains those files.
 - Append commit bullet lines to the active release notes file under `ReleaseNotes\` when one exists.
 - Use the LTsoft release notes style: title `# Version X.Y.Z`, one `## Changes` section, and a flat bullet list starting with imperative verbs (`Add`, `Update`, `Refactor`, and so on).
 - Do not add milestone, area, or subsection headings to release notes files.
