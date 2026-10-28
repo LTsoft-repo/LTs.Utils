@@ -6,43 +6,79 @@ function Pause
     $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
 }
 
-# Check if the current user has administrative privileges
-$adminCheck = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+function Get-LocalNuGetsDirectory
+{
+    param(
+        [string] $StartDirectory
+    )
 
-# If not running as administrator, relaunch the script with elevated privileges
-if (-not $adminCheck) {
-    Write-Host "This script requires administrative privileges." -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Relaunching the script with elevated privileges..." -ForegroundColor Yellow
-    Start-Sleep -Seconds 5
+    $directory = $StartDirectory
+    while ($directory) {
+        foreach ($configName in @('nuget.config', 'NuGet.Config', 'NuGet.config')) {
+            $configPath = Join-Path $directory $configName
+            if (-not (Test-Path -LiteralPath $configPath)) {
+                continue
+            }
 
-    $scriptPath = $MyInvocation.MyCommand.Path
-    Start-Process pwsh.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
-    Exit
+            [xml] $config = Get-Content -LiteralPath $configPath
+            $localSource = $config.configuration.packageSources.add |
+                Where-Object { $_.key -eq 'localNuGets' } |
+                Select-Object -First 1
+
+            if ($localSource -and $localSource.value) {
+                $sourcePath = $localSource.value
+                if (-not [System.IO.Path]::IsPathRooted($sourcePath)) {
+                    $sourcePath = Join-Path $directory $sourcePath
+                }
+
+                return [System.IO.Path]::GetFullPath($sourcePath)
+            }
+        }
+
+        $parent = Split-Path $directory -Parent
+        if (-not $parent -or $parent -eq $directory) {
+            break
+        }
+
+        $directory = $parent
+    }
+
+    throw "Could not find a 'localNuGets' package source in nuget.config. Walked up from $StartDirectory."
 }
 
+$ErrorActionPreference = 'Stop'
+
 # Get the path to the NuGet folder relative to the script's location
-$sourceDirectory = Join-Path -Path $PSScriptRoot -ChildPath "Nuget"
-$destinationDirectory = Join-Path -Path $env:ProgramFiles -ChildPath "dotnet\library-packs"
-$packageCacheDirectory = Join-Path -Path $env:USERPROFILE -ChildPath ".nuget\packages"
+$sourceDirectory = Join-Path -Path $PSScriptRoot -ChildPath 'NuGet'
+$destinationDirectory = Get-LocalNuGetsDirectory -StartDirectory $PSScriptRoot
+$packageCacheDirectory = Join-Path -Path $env:USERPROFILE -ChildPath '.nuget\packages'
+
+Write-Host "Local NuGet feed: $destinationDirectory" -ForegroundColor Cyan
 
 # Gets the list of packages to copy
-$packageFiles = Get-ChildItem -Path $PSScriptRoot\NuGet
+$packageFiles = Get-ChildItem -Path $sourceDirectory -Filter '*.nupkg' -ErrorAction SilentlyContinue
+if (-not $packageFiles) {
+    Write-Host "No NuGet packages found in '$sourceDirectory'. Run BuildRelease.ps1 first." -ForegroundColor Yellow
+    Pause
+    exit 1
+}
+
 # The files in packageFiles has the name with the following format: "namepackage.x.x.x.nupkg", extract the package name
-$packageNames = $packageFiles | ForEach-Object { $_.Name -replace '\.\d+\.\d+\.\d+\.nupkg', '' }
+$packageNames = $packageFiles | ForEach-Object { $_.Name -replace '\.\d+\.\d+\.\d+.*\.nupkg$', '' }
 
 # Removes each of the packages to copy from the destination directory
 Write-Host "Removing packages from local library..."
 $packageNames | ForEach-Object {
     $package = $_
-    $packagePath = Join-Path -Path $destinationDirectory -ChildPath "$package.*.*"
+    $existingPackages = Get-ChildItem -Path $destinationDirectory -Filter "$package.*.nupkg" -ErrorAction SilentlyContinue
 
-    if (Test-Path -Path $packagePath) {
-        Write-Host "- $packagePath" -ForegroundColor DarkGray
-        Remove-Item -Path $packagePath -Force -ErrorAction SilentlyContinue
+    if ($existingPackages) {
+        $existingPackages | ForEach-Object {
+            Write-Host "- $($_.FullName)" -ForegroundColor DarkGray
+            Remove-Item -LiteralPath $_.FullName -Force
+        }
     } else {
-        Write-Host "- WARNING: $packagePath does not exist." -ForegroundColor Yellow
-        # Write-Warning "WARNING: $packagePath does not exist."
+        Write-Host "- WARNING: No existing package found for $package in $destinationDirectory." -ForegroundColor Yellow
     }
 }
 
@@ -57,20 +93,17 @@ $packageNames | ForEach-Object {
         Remove-Item -Path $packagePath -Recurse -Force
     } else {
         Write-Host "- WARNING: $packagePath does not exist." -ForegroundColor Yellow
-        # Write-Warning "WARNING: $packagePath does not exist."
     }
 }
 
 # Check if the source directory exists
 Write-Host "Copying new packages..."
 if (Test-Path $sourceDirectory) {
-    # Check if the destination directory exists, if not, create it
     if (-not (Test-Path $destinationDirectory)) {
-        New-Item -ItemType Directory -Path $destinationDirectory -Force
+        New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
     }
 
-    # Copy the NuGet packages to the destination directory, overriding any existing ones
-    Copy-Item -Path $sourceDirectory\* -Destination $destinationDirectory -Force -Recurse
+    Copy-Item -Path (Join-Path $sourceDirectory '*') -Destination $destinationDirectory -Force
 
     Write-Host "NuGet packages copied successfully to $destinationDirectory." -ForegroundColor Green
 } else {

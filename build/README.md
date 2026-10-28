@@ -1,44 +1,52 @@
-# Publish NuGet packages
+# NuGet build scripts
 
-## Setup GitHub Token (API Key)
+## Introduction
+PowerShell scripts in this folder build release packages, copy them to a local feed defined in `nuget.config`, and publish them to GitHub Packages.
+
+
+## Setup GitHub token
 - Go to [GitHub Developer Settings](https://github.com/settings/tokens).
-- Click on **Generate new token** and select **Generate new token (classic)**.
+- Click **Generate new token**, then **Generate new token (classic)**.
 - Under **Note**, enter a name for the token.
-- Select the **Expiration** date. It can be up to 1 year.
-- Select the following scopes:
+- Select an **Expiration** date (up to one year).
+- Select these scopes:
   - `read:packages`
   - `write:packages`
   - `delete:packages`
   - `repo`
-- Click on **Generate token**.
-- Copy the token and save it in a secure place. **You will not be able to see it again.**
-- Click **Configure SSO**, and make sure to select the organization you want to use the token with.
+- Click **Generate token**.
+- Copy the token and store it securely. You cannot view it again after you leave the page.
+- Click **Configure SSO** and authorize the organization that hosts the packages.
 
 
-## Setup
-- If you don't have the `nuget.config` file, create it in the root of your repositories' folder.
-  - Add the following content to the `nuget.config` file:
-  ```xml
-  <?xml version="1.0" encoding="utf-8"?>
-    <configuration>
-      <packageSources>
-        <add key="githubLTsoft" value="https://nuget.pkg.github.com/LTsoft-repo/index.json" />
-      </packageSources>
-    
-      <packageSourceCredentials>
-    
-        <githubLTsoft>
-          <add key="Username" value="@YourUserName@" />
-          <add key="ClearTextPassword" value="@YourGithubAPIKey@" />
-        </githubLTsoft>
-    
-      </packageSourceCredentials>
-    </configuration>
-  ```
-  - Replace `@YourUserName@`, and `@YourGithubAPIKey@` with your information.
-    - `@YourUserName@`: Your GitHub username.
-    - `@YourGithubAPIKey@`: The GitHub API key you created on the previous steps.
+## Setup nuget.config
+Create or update `nuget.config` at the root of your repositories folder (for example `D:\Repositories\nuget.config`). Add a GitHub Packages source, a `localNuGets` folder source, and credentials for GitHub:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="githubLTsoft" value="https://nuget.pkg.github.com/LTsoft-repo/index.json" />
+    <add key="localNuGets" value="./_localNuGets" />
+  </packageSources>
+
+  <packageSourceCredentials>
+    <githubLTsoft>
+      <add key="Username" value="@YourUserName@" />
+      <add key="ClearTextPassword" value="@YourGithubApiKey@" />
+    </githubLTsoft>
+  </packageSourceCredentials>
+</configuration>
+```
+
+Replace `@YourUserName@` with your GitHub username and `@YourGithubApiKey@` with the token from the previous section. The `localNuGets` path is resolved relative to the folder that contains `nuget.config`.
+
 
 ## Usage
-- Run the `BuildRelease.ps1` script to build the solution.
-- Run the `PublishNuGetPackages.ps1` script to publish the NuGet packages.
+| Script                       | Purpose                                                                 |
+|------------------------------|-------------------------------------------------------------------------|
+| `BuildRelease.ps1`           | Clean, build the solution, and pack `.nupkg` files into `build\NuGet`.  |
+| `CopyToLocalLibrary.ps1`     | Copy packages from `build\NuGet` into the `localNuGets` feed.           |
+| `PublishNuGetPackages.ps1`   | Push packages from `build\NuGet` to the `githubLTsoft` NuGet source.    |
+
+Run the scripts from this folder in that order when you want a local feed and a remote publish. `CopyToLocalLibrary.ps1` walks up from `build` to locate `nuget.config`; it does not require administrator privileges.
