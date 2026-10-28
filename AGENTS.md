@@ -86,11 +86,13 @@ These rules apply to the entire repository.
 
 ## JSON
 
-- Prefer `LTs.Json` extension methods for JSON parsing and serialization (`ParseAsJToken`, `ToJson`).
-- `Newtonsoft.Json` (`JToken`, `JObject`, `JToken.FromObject`) is the underlying JSON model when `LTs.Json` does not provide a helper.
+- Prefer `LTs.Json` extension methods for JSON parsing and serialization: `ParseAsJToken` (string → `JToken`) and `ToJson` (`JToken` or CLR object → string, optional `JsonStringOptions`).
+- When serializing a CLR object to a JSON string, use `ToJson`. Do not invent a `JToken` via `JToken.FromObject` only to call `ToJson` or `ToString`, and do not call `JsonConvert.SerializeObject` when `ToJson` is available.
+- `Newtonsoft.Json` (`JToken`, `JObject`, `JsonConvert`) is the underlying JSON model when `LTs.Json` does not provide a helper.
 - Do not add `System.Text.Json` usage in new production code unless an existing component in the same area already depends on it.
 - Prefer `JToken` for JSON payloads and schema metadata at tool and API boundaries.
 - Use the same preview version of `LTs.Json` as other LTsoft packages already referenced in the solution.
+- Follow `..\CodeGuidelines\.cursor\rules\json-serialization.mdc` for object vs `JToken` serialization.
 
 ## Solution And Project Layout
 
