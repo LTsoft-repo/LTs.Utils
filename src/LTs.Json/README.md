@@ -9,4 +9,4 @@ This library includes:
   - JsonParseOptions
   - JsonStringOptions
   - StringDeserializeExtensions.ParseAsJToken()
-  - JTokenSerializeExtensions.ToJson() (JToken and object)
+  - JTokenSerializeExtensions.ToJson() (JToken, object, Formatting, JsonSerializerSettings)

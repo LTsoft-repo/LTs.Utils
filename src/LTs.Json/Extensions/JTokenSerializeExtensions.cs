@@ -14,12 +14,26 @@ public static class JTokenSerializeExtensions
     /// <param name="value">The value to convert.</param>
     /// <param name="options">The JSON string options.</param>
     /// <returns>The JSON string.</returns>
-    public static string ToJson( this object? value, JsonStringOptions? options = null )
-    {
-        var selectedOptions = options ?? JsonStringOptions.Default;
+    public static string ToJson( this object? value, JsonStringOptions options = JsonStringOptions.Minify )
+        => JsonConvert.SerializeObject( value, CreateSerializerSettings( options ) );
 
-        return JsonConvert.SerializeObject( value, GetFormatting( selectedOptions ) );
-    }
+    /// <summary>
+    ///     Converts an object to a JSON string.
+    /// </summary>
+    /// <param name="value">The value to convert.</param>
+    /// <param name="formatting">The JSON formatting.</param>
+    /// <returns>The JSON string.</returns>
+    public static string ToJson( this object? value, Formatting formatting )
+        => JsonConvert.SerializeObject( value, formatting );
+
+    /// <summary>
+    ///     Converts an object to a JSON string.
+    /// </summary>
+    /// <param name="value">The value to convert.</param>
+    /// <param name="settings">The JSON serializer settings.</param>
+    /// <returns>The JSON string.</returns>
+    public static string ToJson( this object? value, JsonSerializerSettings settings )
+        => JsonConvert.SerializeObject( value, settings );
 
     /// <summary>
     ///     Converts a <see cref="JToken" /> to a JSON string.
@@ -27,20 +41,25 @@ public static class JTokenSerializeExtensions
     /// <param name="token">The JSON token to convert.</param>
     /// <param name="options">The JSON string options.</param>
     /// <returns>The JSON string.</returns>
-    public static string ToJson( this JToken token, JsonStringOptions? options = null )
-    {
-        var selectedOptions = options ?? JsonStringOptions.Default;
-
-        return token.ToString( GetFormatting( selectedOptions ) );
-    }
+    public static string ToJson( this JToken token, JsonStringOptions options = JsonStringOptions.Minify )
+        => JsonConvert.SerializeObject( token, CreateSerializerSettings( options ) );
 
     private static Formatting GetFormatting( JsonStringOptions options )
     {
-        if( options.Minify )
+        if( options.HasFlag( JsonStringOptions.UseIndent ) && !options.HasFlag( JsonStringOptions.Minify ) )
         {
-            return Formatting.None;
+            return Formatting.Indented;
         }
 
-        return options.UseIndent ? Formatting.Indented : Formatting.None;
+        return Formatting.None;
     }
+
+    private static JsonSerializerSettings CreateSerializerSettings( JsonStringOptions options )
+        => new()
+        {
+            Formatting = GetFormatting( options ),
+            NullValueHandling = options.HasFlag( JsonStringOptions.IgnoreNulls )
+                                    ? NullValueHandling.Ignore
+                                    : NullValueHandling.Include
+        };
 }

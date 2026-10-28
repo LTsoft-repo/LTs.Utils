@@ -1,22 +1,28 @@
 namespace LTs.Json.Extensions;
 
 /// <summary>
-///     Options for converting JSON tokens to strings.
+///     Options for converting values to JSON strings.
 /// </summary>
-public record JsonStringOptions
+[ Flags ]
+public enum JsonStringOptions
 {
     /// <summary>
-    ///     Default JSON string options.
+    ///     No options. Compact JSON without indentation.
     /// </summary>
-    public static JsonStringOptions Default { get; } = new();
+    None = 0,
 
     /// <summary>
-    ///     Indicates whether the JSON string should be indented.
+    ///     Compact JSON without indentation. Takes precedence over <see cref="UseIndent" />.
     /// </summary>
-    public bool UseIndent { get; init; }
+    Minify = 1,
 
     /// <summary>
-    ///     Indicates whether the JSON string should be minified.
+    ///     Indented JSON.
     /// </summary>
-    public bool Minify { get; init; }
+    UseIndent = 2,
+
+    /// <summary>
+    ///     Omit null values when serializing.
+    /// </summary>
+    IgnoreNulls = 4
 }
