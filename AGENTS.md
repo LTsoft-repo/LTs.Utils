@@ -4,9 +4,10 @@ These rules apply to the entire repository.
 
 ## Agent Base Rules
 
-- Always treat this file (`AGENTS.md`) as the base rule set for every agent session in this repository.
-- Read `AGENTS.md` before making edits, and follow its conventions unless the user explicitly overrides them.
-- When other guidance conflicts with `AGENTS.md`, prefer `AGENTS.md` for repository-specific decisions.
+- Read `..\CodeGuidelines\AGENTS.md` for shared LTsoft repository rules before making edits in this repository.
+- Read every `.mdc` file in `..\CodeGuidelines\.cursor\rules\` per `.cursor/rules/codeguidelines-rules.mdc`.
+- Read this file for **LTs.Utils** paths and overrides below.
+- When this file and `CodeGuidelines\AGENTS.md` disagree on facts for **this** repository, **prefer this file**.
 
 ## Rules Authoring
 
