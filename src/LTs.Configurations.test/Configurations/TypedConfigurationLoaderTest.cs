@@ -266,6 +266,78 @@ public class TypedConfigurationLoaderTest : BaseTest
     }
     #endregion
 
+    #region LoadConfigurationOptions
+    [ Fact ]
+    public void LoadConfiguration_WithOptions_BindsOptionalValuesAndDefaults()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "Value1",
+                                                "OptionalCount": 10,
+                                                "OptionalUri": "http://example.com"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<SampleConfiguration>(
+            "Sample",
+            options => options.SetValue( c => c.EnumValue, _ => EnumValues.Value1 ) );
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new SampleConfiguration
+            {
+                RequiredName = "primary",
+                EnumValue = EnumValues.Value1,
+                OptionalCount = 10,
+                OptionalUri = new Uri( "http://example.com" )
+            } );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WithOptions_AppliesMultipleSetValues()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "Value3",
+                                                "OptionalDescription": "%TEMP%\\work"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<SampleConfiguration>(
+            "Sample",
+            options => options
+                       .SetValue( c => c.EnumValue, v => Enum.Parse<EnumValues>( v!, true ) )
+                       .SetValue(
+                           c => c.OptionalDescription,
+                           v => Environment.ExpandEnvironmentVariables( v ?? string.Empty ) ) );
+
+        // Assert
+        var expectedDescription = Environment.ExpandEnvironmentVariables( "%TEMP%\\work" );
+
+        result.Should().BeEquivalentTo(
+            new SampleConfiguration
+            {
+                RequiredName = "primary",
+                EnumValue = EnumValues.Value3,
+                OptionalDescription = expectedDescription
+            } );
+    }
+    #endregion
+
     #region AddConfiguration
     [ Fact ]
     public void AddConfiguration_ResolvesConfiguration()
@@ -343,6 +415,46 @@ public class TypedConfigurationLoaderTest : BaseTest
                 },
                 Tags = [ "alpha" ],
                 Items = [ new ItemConfiguration { Name = "second" } ]
+            } );
+    }
+
+    [ Fact ]
+    public void AddConfiguration_ResolvesConfigurationWithLoadOptions()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "Value2"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        var containerBuilder = new ContainerBuilder();
+
+        containerBuilder.RegisterInstance( configuration )
+                        .As<IConfiguration>()
+                        .SingleInstance();
+
+        containerBuilder.AddConfiguration<SampleConfiguration>(
+            "Sample",
+            options => options.SetValue( c => c.EnumValue, v => Enum.Parse<EnumValues>( v!, true ) ),
+            null );
+
+        using var container = containerBuilder.Build();
+
+        // Act
+        var result = container.Resolve<SampleConfiguration>();
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new SampleConfiguration
+            {
+                RequiredName = "primary",
+                EnumValue = EnumValues.Value2
             } );
     }
 

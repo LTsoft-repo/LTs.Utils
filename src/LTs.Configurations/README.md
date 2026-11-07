@@ -19,6 +19,7 @@ This library includes:
   - ScheduleConfigurationLoader.LoadScheduleConfiguration&lt;T&gt;()
   - ScheduleConfigurationRegistrationExtensions.AddScheduleConfiguration()
   - ScheduleConfigurationRegistrationExtensions.AddScheduleConfiguration&lt;T&gt;()
+  - LoadConfigurationOptions&lt;T&gt;.SetValue()
   - TypedConfigurationLoader.LoadConfiguration&lt;T&gt;()
   - TypedConfigurationLoader.AddConfiguration&lt;T&gt;()
   - TypedConfigurationLoader supports nested objects, arrays, and collections

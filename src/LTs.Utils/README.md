@@ -51,6 +51,7 @@ This library includes:
   - ReflectionExtensions.GetFieldValue&lt;T&gt;()
   - ReflectionExtensions.GetPropertyValue&lt;T&gt;()
   - ReflectionExtensions.GetDataMemberValue&lt;T&gt;()
+  - ReflectionExpressionExtensions.GetPropertyName&lt;T, TProperty&gt;()
   - ReflectionHelper.CreateInstance&lt;T&gt;()
   - ReflectionHelper.CreateInstance&lt;T&gt;( params object[] )
   - ReflectionPropertiesExtensions.CopyPropertiesFrom()
