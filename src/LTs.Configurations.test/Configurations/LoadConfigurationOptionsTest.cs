@@ -4,7 +4,7 @@ using LTs.Configurations.test.Infrastructure;
 namespace LTs.Configurations.test.Configurations;
 
 public class LoadConfigurationOptionsTest : BaseTest
-{ 
+{
     public LoadConfigurationOptionsTest( ITestOutputHelper testOutput )
         : base( testOutput ) { }
 
@@ -33,7 +33,7 @@ public class LoadConfigurationOptionsTest : BaseTest
         var options = new LoadConfigurationOptions<SampleConfiguration>();
 
         // Act
-        var result = options.SetValue( c => c.EnumValue, v => Enum.Parse<EnumValues>( v!, ignoreCase: true ) );
+        var result = options.SetValue<string?, EnumValues>( c => c.EnumValue, v => Enum.Parse<EnumValues>( v!, true ) );
 
         // Assert
         result.Should().BeSameAs( options );

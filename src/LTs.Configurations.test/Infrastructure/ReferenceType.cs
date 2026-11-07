@@ -1,5 +1,3 @@
 namespace LTs.Configurations.test.Infrastructure;
 
-internal class ReferenceType
-{
-}
+internal class ReferenceType;

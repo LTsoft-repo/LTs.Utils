@@ -4,10 +4,13 @@ namespace LTs.Configurations.test.Infrastructure;
 
 internal record ComplexConfiguration
 {
-    public NestedConfiguration Nested { get; init; } = new();
+    [ Required ]
+    public required NestedConfiguration Nested { get; init; }
 
     public string[] Tags { get; init; } = [ ];
 
     [ Required ]
-    public IReadOnlyList<ItemConfiguration> Items { get; init; } = [ ];
+    public required IReadOnlyList<ItemConfiguration> Items { get; init; }
+
+    public int OptionalCount { get; init; }
 }

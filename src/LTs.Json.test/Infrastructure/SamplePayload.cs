@@ -1,6 +1,6 @@
 namespace LTs.Json.test.Infrastructure;
 
-internal sealed class SamplePayload
+internal class SamplePayload
 {
     public required string Name { get; init; }
 

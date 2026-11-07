@@ -78,9 +78,8 @@ public static class TypedConfigurationLoader
 
         foreach( var property in properties )
         {
-            var (isRequired, allowEmpty) = GetRequiredMetadata( property );
             var defaultValue = property.GetValue( instance );
-            var value = ReadPropertyValue( section, property, isRequired, allowEmpty, defaultValue, options );
+            var value = ReadConfigurationValue( section, property, defaultValue, options );
 
             property.SetValue( instance, value );
         }
@@ -183,18 +182,17 @@ public static class TypedConfigurationLoader
         return options;
     }
 
-    private static object? ReadPropertyValue<T>( IConfiguration section,
-                                                 PropertyInfo property,
-                                                 bool isRequired,
-                                                 bool allowEmpty,
-                                                 object? defaultValue,
-                                                 LoadConfigurationOptions<T>? options )
+    private static object? ReadConfigurationValue<T>( IConfiguration section,
+                                                      PropertyInfo property,
+                                                      object? defaultValue,
+                                                      LoadConfigurationOptions<T>? options )
         where T : notnull
     {
         var propertyName = property.Name;
         var propertyType = property.PropertyType;
-        var customConverter = GetCustomConverter( options, propertyName );
-        var isConfigured = HasConfiguredValue( section, propertyName );
+        var customConverter = TryGetCustomConverter( options, propertyName );
+        var isConfigured = HasConfigurationValue( section, propertyName );
+        var (isRequired, allowEmpty) = GetRequiredMetadata( property );
 
         if( !isConfigured )
         {
@@ -208,7 +206,12 @@ public static class TypedConfigurationLoader
                 return defaultValue;
             }
 
-            var missingValue = ConvertWithCustomConverter( section, propertyName, customConverter, propertyType );
+            var missingValue = ConvertConfiguration( section,
+                                                     property,
+                                                     customConverter.Value.configValueType,
+                                                     customConverter.Value.converter,
+                                                     false,
+                                                     defaultValue );
 
             if( isRequired )
             {
@@ -219,8 +222,13 @@ public static class TypedConfigurationLoader
         }
 
         var value = customConverter is not null
-                        ? ConvertWithCustomConverter( section, propertyName, customConverter, propertyType )
-                        : ConvertPropertyValue( section, propertyName, propertyType );
+                        ? ConvertConfiguration( section,
+                                                property,
+                                                customConverter.Value.configValueType,
+                                                customConverter.Value.converter,
+                                                true,
+                                                defaultValue )
+                        : ConvertPropertyValue( section, propertyName, propertyType, options );
 
         if( isRequired )
         {
@@ -230,21 +238,38 @@ public static class TypedConfigurationLoader
         return value ?? defaultValue;
     }
 
-    private static Func<string?, object?>? GetCustomConverter<T>( LoadConfigurationOptions<T>? options,
-                                                                  string propertyName )
+    private static (Type configValueType, Func<object?, object?> converter)? TryGetCustomConverter<T>(
+        LoadConfigurationOptions<T>? options,
+        string propertyName )
         where T : notnull
-        => options is not null && options.TryGetConverter( propertyName, out var convert )
-               ? convert
-               : null;
-
-    private static object? ConvertWithCustomConverter( IConfiguration section,
-                                                       string propertyName,
-                                                       Func<string?, object?> convert,
-                                                       Type propertyType )
     {
+        if( options is null || !options.TryGetConverter( propertyName, out var configValueType, out var converter ) )
+        {
+            return null;
+        }
+
+        return ( configValueType!, converter! );
+    }
+
+    private static object? ConvertConfiguration( IConfiguration section,
+                                                 PropertyInfo property,
+                                                 Type configValueType,
+                                                 Func<object?, object?> convert,
+                                                 bool isConfigured,
+                                                 object? defaultValue )
+    {
+        var propertyName = property.Name;
+        var propertyType = property.PropertyType;
+
         try
         {
-            return convert( section[ propertyName ] );
+            var configValue = ReadValue( section,
+                                         propertyName,
+                                         configValueType,
+                                         isConfigured,
+                                         defaultValue );
+
+            return convert( configValue );
         }
         catch( ConfigurationException )
         {
@@ -258,7 +283,28 @@ public static class TypedConfigurationLoader
         }
     }
 
-    private static bool HasConfiguredValue( IConfiguration section, string propertyName )
+    private static object? ReadValue( IConfiguration section,
+                                      string propertyName,
+                                      Type configValueType,
+                                      bool isConfigured,
+                                      object? defaultValue )
+    {
+        var underlyingType = Nullable.GetUnderlyingType( configValueType ) ?? configValueType;
+
+        if( !isConfigured )
+        {
+            return underlyingType == typeof( string ) ? null : defaultValue;
+        }
+
+        if( underlyingType == typeof( string ) )
+        {
+            return section[ propertyName ];
+        }
+
+        return ConvertPropertyValue( section, propertyName, configValueType, null );
+    }
+
+    private static bool HasConfigurationValue( IConfiguration section, string propertyName )
     {
         var propertySection = section.GetSection( propertyName );
 
@@ -318,9 +364,16 @@ public static class TypedConfigurationLoader
             _ => false
         };
 
+    private static readonly MethodInfo LoadConfigurationWithOptionsDefinition = typeof( TypedConfigurationLoader )
+        .GetMethods( BindingFlags.Public | BindingFlags.Static )
+        .Single( method => method is { Name: nameof( LoadConfiguration ), IsGenericMethodDefinition: true }
+                             && method.GetParameters() is [ _, { ParameterType.IsGenericType: true } parameter ]
+                             && parameter.ParameterType.GetGenericTypeDefinition() == typeof( LoadConfigurationOptions<> ) );
+
     private static object? ConvertPropertyValue( IConfiguration section,
-                                                 string propertyName,
-                                                 Type propertyType )
+                                               string propertyName,
+                                               Type propertyType,
+                                               object? loadOptions )
     {
         var underlyingType = Nullable.GetUnderlyingType( propertyType ) ?? propertyType;
         var propertySection = section.GetSection( propertyName );
@@ -357,7 +410,7 @@ public static class TypedConfigurationLoader
 
             return underlyingType.IsCollectionType()
                        ? ConvertCollectionValue( propertyType, propertySection )
-                       : LoadNestedConfiguration( propertySection, underlyingType );
+                       : LoadNestedConfiguration( propertySection, underlyingType, loadOptions, propertyName );
         }
         catch( ConfigurationException )
         {
@@ -402,25 +455,27 @@ public static class TypedConfigurationLoader
         throw new ConfigurationException( $"Configuration type '{propertyType.Name}' is not supported." );
     }
 
-    private static object LoadNestedConfiguration( IConfiguration section, Type configurationType )
+    private static object LoadNestedConfiguration( IConfiguration section,
+                                                 Type configurationType,
+                                                 object? parentLoadOptions,
+                                                 string nestedPropertyName )
     {
-        var loadMethod = typeof( TypedConfigurationLoader ).GetMethod(
-            nameof( LoadConfiguration ),
-            BindingFlags.Public | BindingFlags.Static,
-            null,
-            [ typeof( IConfiguration ) ],
-            null );
+        object? nestedLoadOptions = null;
 
-        if( loadMethod is null )
+        if( parentLoadOptions is not null )
         {
-            throw new ConfigurationException( $"Configuration type '{configurationType.Name}' is not supported." );
+            var createMethod = parentLoadOptions.GetType().GetMethod(
+                "CreateNestedLoadOptions",
+                BindingFlags.Instance | BindingFlags.NonPublic );
+
+            nestedLoadOptions = createMethod?.Invoke( parentLoadOptions, [ configurationType, nestedPropertyName ] );
         }
 
-        var genericLoadMethod = loadMethod.MakeGenericMethod( configurationType );
+        var genericLoadMethod = LoadConfigurationWithOptionsDefinition.MakeGenericMethod( configurationType );
 
         try
         {
-            var result = genericLoadMethod.Invoke( null, [ section ] );
+            var result = genericLoadMethod.Invoke( null, [ section, nestedLoadOptions ] );
 
             return result
                    ?? throw new ConfigurationException( $"Configuration type '{configurationType.Name}' is not supported." );

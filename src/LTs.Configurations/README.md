@@ -32,6 +32,7 @@ This library includes:
   - ConfigurationException.ThrowIfNullOrEmpty()
   - ConfigurationException.ThrowIfNullOrWhiteSpace()
 - LTs.Configurations.Extensions
+  - ConfigurationExpressionExtensions.GetConfigurationPath()
   - ConfigurationBuilderEmptyStringExtensions.ParseEmptyString()
   - ConfigurationBuilderExtensions.AddJsonString()
   - GetConfigurationExtensions.GetRequiredValue&lt;T&gt;()

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace LTs.TestUtils.test.FluentAssertions.Infrastructure;
 
-internal sealed class UnsupportedLogger : ILogger
+internal class UnsupportedLogger : ILogger
 {
     public IDisposable BeginScope<TState>( TState state ) where TState : notnull
         => throw new NotSupportedException();
