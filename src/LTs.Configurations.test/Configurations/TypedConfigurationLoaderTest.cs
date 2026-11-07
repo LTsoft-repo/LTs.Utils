@@ -3,6 +3,7 @@ using LTs.Configurations.Configurations;
 using LTs.Configurations.Exceptions;
 using LTs.Configurations.Extensions;
 using LTs.Configurations.test.Infrastructure;
+using LTs.Utils.Extensions.Enums;
 using Microsoft.Extensions.Configuration;
 
 namespace LTs.Configurations.test.Configurations;
@@ -287,7 +288,7 @@ public class TypedConfigurationLoaderTest : BaseTest
         // Act
         var result = configuration.LoadConfiguration<SampleConfiguration>(
             "Sample",
-            options => options.SetValue( c => c.EnumValue, _ => EnumValues.Value1 ) );
+            options => options.SetValue( c => c.EnumValue, v => v.ToEnum<EnumValues>() ) );
 
         // Assert
         result.Should().BeEquivalentTo(
