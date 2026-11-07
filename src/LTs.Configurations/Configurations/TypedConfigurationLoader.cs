@@ -16,6 +16,16 @@ namespace LTs.Configurations.Configurations;
 public static class TypedConfigurationLoader
 {
     /// <summary>
+    ///     Loads a typed configuration object from a configuration section.
+    /// </summary>
+    /// <typeparam name="T">The configuration type.</typeparam>
+    /// <param name="section">The configuration section.</param>
+    /// <returns>The loaded configuration.</returns>
+    public static T LoadConfiguration<T>( this IConfiguration section )
+        where T : notnull
+        => section.LoadConfiguration<T>( options: null );
+
+    /// <summary>
     ///     Loads a typed configuration object from the specified configuration section.
     /// </summary>
     /// <typeparam name="T">The configuration type.</typeparam>
@@ -51,16 +61,6 @@ public static class TypedConfigurationLoader
 
         return section.LoadConfiguration( options );
     }
-
-    /// <summary>
-    ///     Loads a typed configuration object from a configuration section.
-    /// </summary>
-    /// <typeparam name="T">The configuration type.</typeparam>
-    /// <param name="section">The configuration section.</param>
-    /// <returns>The loaded configuration.</returns>
-    public static T LoadConfiguration<T>( this IConfiguration section )
-        where T : notnull
-        => section.LoadConfiguration<T>( options: null );
 
     /// <summary>
     ///     Loads a typed configuration object from a configuration section.
