@@ -10,7 +10,7 @@
     <!--Publish Package START-->
     <PropertyGroup>
         <PackageId>LTs.Configurations</PackageId>
-        <Version>10.0.0-preview5</Version>
+        <Version>10.0.0-preview6</Version>
         <Authors>LTsoft</Authors>
         <Description>LTs.Configurations</Description>
         <Copyright>Copyright 2026</Copyright>
@@ -22,25 +22,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="README.md" Pack="true" PackagePath="\" />
+        <None Include="README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
     <!--Publish Package END-->
 
     <ItemGroup>
-        <PackageReference Include="Autofac" Version="9.3.0" />
-        <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
-        <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+        <PackageReference Include="Autofac" Version="9.3.0"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2026.2.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0"/>
+        <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\LTs.DependencyInjections\LTs.DependencyInjections.csproj" />
-        <ProjectReference Include="..\LTs.Utils\LTs.Utils.csproj" />
+        <ProjectReference Include="..\LTs.DependencyInjections\LTs.DependencyInjections.csproj"/>
+        <ProjectReference Include="..\LTs.Utils\LTs.Utils.csproj"/>
     </ItemGroup>
 
 </Project>
