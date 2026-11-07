@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using LTs.Utils;
 using Microsoft.Extensions.Configuration;
 
 namespace LTs.Logging.Configurations;
@@ -17,8 +18,7 @@ public static class LogConfigurationExtensions
     public static LogConfiguration LoadLogConfiguration( this IConfiguration configuration )
         => new()
         {
-            Path = Environment.ExpandEnvironmentVariables( configuration.GetValue( "Path", LogConfigurationDefaults.Path ) ??
-                                                           LogConfigurationDefaults.Path ),
+            Path = configuration.GetValue( "Path", LogConfigurationDefaults.Path ).ExpandEnvironmentVariables() ?? LogConfigurationDefaults.Path,
             MaxFileSizeInMegabytes = configuration.GetValue( "MaxFileSizeInMegabytes", LogConfigurationDefaults.MaxFileSizeInMegabytes ),
             DebugLogRetainedFileCount = configuration.GetValue( "DebugLogRetainedFileCount", LogConfigurationDefaults.DebugLogRetainedFileCount ),
             ErrorLogRetainedFileCount = configuration.GetValue( "ErrorLogRetainedFileCount", LogConfigurationDefaults.ErrorLogRetainedFileCount )

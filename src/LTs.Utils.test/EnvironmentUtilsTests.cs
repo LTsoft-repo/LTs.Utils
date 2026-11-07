@@ -1,7 +1,10 @@
 ﻿namespace LTs.Utils.test;
 
-public class EnvironmentUtilsTests
+public class EnvironmentUtilsTests : BaseTest
 {
+    public EnvironmentUtilsTests( ITestOutputHelper testOutput )
+        : base( testOutput ) { }
+
     #region GetEnvironmentName
     [ Fact ]
     public void GetEnvironmentName_FromAspNetEnvironment_ReturnsCorrectEnvironmentName()
@@ -45,6 +48,52 @@ public class EnvironmentUtilsTests
 
         // Assert
         actualEnvironment.Should().Be( "Development" );
+    }
+    #endregion
+
+    #region ExpandEnvironmentVariables
+    [ Fact ]
+    public void ExpandEnvironmentVariables_WhenValueIsNull_ReturnsNull()
+    {
+        // Arrange
+        string? value = null;
+
+        // Act
+        var result = value.ExpandEnvironmentVariables();
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [ Fact ]
+    public void ExpandEnvironmentVariables_WhenValueHasNoVariables_ReturnsSameValue()
+    {
+        // Arrange
+        const string value = "plain text";
+
+        // Act
+        var result = value.ExpandEnvironmentVariables();
+
+        // Assert
+        result.Should().Be( value );
+    }
+
+    [ Fact ]
+    public void ExpandEnvironmentVariables_WhenValueContainsVariable_ExpandsVariable()
+    {
+        // Arrange
+        const string variableName = "LTs_Utils_ExpandEnvironmentVariables_Test";
+        const string variableValue = "expanded-value";
+        const string input = $"prefix-%{variableName}%-suffix";
+        Environment.SetEnvironmentVariable( variableName, variableValue );
+
+        // Act
+        var result = input.ExpandEnvironmentVariables();
+
+        // Assert
+        result.Should().Be( $"prefix-{variableValue}-suffix" );
+
+        Environment.SetEnvironmentVariable( variableName, null );
     }
     #endregion
 }

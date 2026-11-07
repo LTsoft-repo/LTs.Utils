@@ -3,6 +3,7 @@ using LTs.Configurations.Configurations;
 using LTs.Configurations.Exceptions;
 using LTs.Configurations.Extensions;
 using LTs.Configurations.test.Infrastructure;
+using LTs.Utils;
 using LTs.Utils.Extensions.Enums;
 using Microsoft.Extensions.Configuration;
 
@@ -324,10 +325,10 @@ public class TypedConfigurationLoaderTest : BaseTest
                        .SetValue( c => c.EnumValue, v => Enum.Parse<EnumValues>( v!, true ) )
                        .SetValue(
                            c => c.OptionalDescription,
-                           v => Environment.ExpandEnvironmentVariables( v ?? string.Empty ) ) );
+                           v => v.ExpandEnvironmentVariables() ?? string.Empty ) );
 
         // Assert
-        var expectedDescription = Environment.ExpandEnvironmentVariables( "%TEMP%\\work" );
+        var expectedDescription = "%TEMP%\\work".ExpandEnvironmentVariables() ?? string.Empty;
 
         result.Should().BeEquivalentTo(
             new SampleConfiguration
@@ -484,7 +485,7 @@ public class TypedConfigurationLoaderTest : BaseTest
             "Sample",
             loaded => loaded with
             {
-                OptionalDescription = Environment.ExpandEnvironmentVariables( loaded.OptionalDescription )
+                OptionalDescription = loaded.OptionalDescription.ExpandEnvironmentVariables() ?? string.Empty
             } );
 
         using var container = containerBuilder.Build();
@@ -493,7 +494,7 @@ public class TypedConfigurationLoaderTest : BaseTest
         var result = container.Resolve<SampleConfiguration>();
 
         // Assert
-        var expectedDescription = Environment.ExpandEnvironmentVariables( "%TEMP%\\work" );
+        var expectedDescription = "%TEMP%\\work".ExpandEnvironmentVariables() ?? string.Empty;
 
         result.Should().BeEquivalentTo( new SampleConfiguration
         {
