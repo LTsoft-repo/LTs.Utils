@@ -1,4 +1,6 @@
-﻿namespace LTs.Utils.Extensions.Enums;
+﻿using System.Text.RegularExpressions;
+
+namespace LTs.Utils.Extensions.Enums;
 
 /// <summary>
 ///     Extension methods for <see cref="Enum" /> values and names.
@@ -6,7 +8,7 @@
 public static class EnumExtensions
 {
     /// <summary>
-    ///     Parses a string into an enum value.
+    ///     Parses a enum value string or friendly name into an enum value.
     /// </summary>
     /// <typeparam name="T">The enum type.</typeparam>
     /// <param name="value">The string to parse.</param>
@@ -15,12 +17,16 @@ public static class EnumExtensions
     public static T ToEnum<T>( this string? value, bool ignoreCase = true )
         where T : struct, Enum
     {
+        var enumName = value?.Replace( " ", "" );
+
         if( string.IsNullOrWhiteSpace( value ) )
         {
             throw new ArgumentException( "Enum value cannot be null or empty.", nameof( value ) );
         }
 
-        return Enum.Parse<T>( value, ignoreCase );
+        return Enum.TryParse<T>( enumName, ignoreCase, out var result )
+                   ? result
+                   : throw new ArgumentException( $"Invalid {nameof( T )}: {value}" );
     }
 
     /// <summary>
@@ -33,4 +39,18 @@ public static class EnumExtensions
         where T : struct, Enum
         => Enum.GetName( typeof( T ), value )
            ?? value.ToString();
+
+    /// <summary>
+    ///     Gets a friendly name for an enum value by inserting spaces before capital letters and between letters and digits.
+    /// </summary>
+    /// <param name="enumValue">The enum value.</param>
+    /// <typeparam name="T">The enum type.</typeparam>
+    /// <returns>The friendly name.</returns>
+    public static string ToFriendlyName<T>( this T enumValue )
+        where T : struct, Enum
+    {
+        var name = Regex.Replace( enumValue.ToString(), "(?<!^)([A-Z])", " $1" );
+
+        return Regex.Replace( name, @"(?<=[a-zA-Z])(?=\d)|(?<=\d)(?=[a-zA-Z])", " " );
+    }
 }

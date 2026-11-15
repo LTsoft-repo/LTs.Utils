@@ -13,12 +13,18 @@ public class EnumExtensionsTest : BaseTest
     [ InlineData( "Value1", SampleEnum.Value1 ) ]
     [ InlineData( "value1", SampleEnum.Value1 ) ]
     [ InlineData( "VALUE2", SampleEnum.Value2 ) ]
-    public void ToEnum_ParsesEnumMemberName( string text, SampleEnum expected )
+    [ InlineData( "Value 1", SampleEnum.Value1 ) ]
+    [ InlineData( "Value One", FriendlyNameSampleEnum.ValueOne ) ]
+    [ InlineData( "value one", FriendlyNameSampleEnum.ValueOne ) ]
+    [ InlineData( "Long Running Process", FriendlyNameSampleEnum.LongRunningProcess ) ]
+    [ InlineData( "Value With Number 31 And Something Else", FriendlyNameSampleEnum.ValueWithNumber31AndSomethingElse ) ]
+    public void ToEnum_CorrectStrings_Successes<T>( string text, T expected )
+        where T : struct, Enum
     {
         // Arrange
 
         // Act
-        var result = text.ToEnum<SampleEnum>();
+        var result = text.ToEnum<T>();
 
         // Assert
         result.Should().Be( expected );
@@ -78,6 +84,44 @@ public class EnumExtensionsTest : BaseTest
         // Act
         var text = original.ToValueString();
         var result = text.ToEnum<SampleEnum>();
+
+        // Assert
+        result.Should().Be( original );
+    }
+    #endregion
+
+    #region ToFriendlyName
+    [ Theory ]
+    [ InlineData( SampleEnum.None, "None" ) ]
+    [ InlineData( SampleEnum.Value1, "Value 1" ) ]
+    [ InlineData( SampleEnum.Value2, "Value 2" ) ]
+    [ InlineData( SampleEnum.Value3, "Value 3" ) ]
+    [ InlineData( FriendlyNameSampleEnum.ValueOne, "Value One" ) ]
+    [ InlineData( FriendlyNameSampleEnum.LongRunningProcess, "Long Running Process" ) ]
+    [ InlineData( FriendlyNameSampleEnum.ValueWithNumber31AndSomethingElse, "Value With Number 31 And Something Else" ) ]
+    public void ToFriendlyName_ReturnsExpectedText<T>( T value, string expected )
+        where T : struct, Enum
+    {
+        // Arrange
+
+        // Act
+        var result = value.ToFriendlyName();
+
+        // Assert
+        result.Should().Be( expected );
+    }
+
+    [ Theory ]
+    [ InlineData( SampleEnum.Value2 ) ]
+    [ InlineData( FriendlyNameSampleEnum.LongRunningProcess ) ]
+    public void ToFriendlyName_AndToEnum_RoundTrip<T>( T original )
+        where T : struct, Enum
+    {
+        // Arrange
+
+        // Act
+        var text = original.ToFriendlyName();
+        var result = text.ToEnum<T>();
 
         // Assert
         result.Should().Be( original );
