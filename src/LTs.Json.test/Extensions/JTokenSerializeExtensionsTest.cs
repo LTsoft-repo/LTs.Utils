@@ -55,7 +55,7 @@ public class JTokenSerializeExtensionsTest : BaseTest
                     """.ParseAsJToken();
 
         // Act
-        var result = token.ToJson( JsonStringOptions.Minify );
+        var result = token.ToJson();
 
         // Assert
         result.Should().Be( """{"name":"John","age":30}""" );
@@ -115,6 +115,7 @@ public class JTokenSerializeExtensionsTest : BaseTest
         var value = new { name = "John", age = 30 };
 
         // Act
+        // ReSharper disable once RedundantArgumentDefaultValue
         var result = value.ToJson( JsonStringOptions.Minify );
 
         // Assert
@@ -190,6 +191,7 @@ public class JTokenSerializeExtensionsTest : BaseTest
     {
         // Arrange
         var value = new SamplePayload { Name = "John", Age = 30 };
+
         var settings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -201,6 +203,131 @@ public class JTokenSerializeExtensionsTest : BaseTest
 
         // Assert
         result.Should().Be( """{"name":"John","age":30}""" );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenNoEnumOptions_SerializesEnumAsNumber()
+    {
+        // Arrange
+        var value = new SampleEnumPayload { Status = SampleEnum.Value2 };
+
+        // Act
+        var result = value.ToJson();
+
+        // Assert
+        result.Should().Be( """{"Status":2}""" );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenEnumsAsStrings_SerializesEnumAsMemberName()
+    {
+        // Arrange
+        var value = new SampleEnumPayload { Status = SampleEnum.Value2 };
+
+        // Act
+        var result = value.ToJson( JsonStringOptions.Minify | JsonStringOptions.EnumsAsStrings );
+
+        // Assert
+        result.Should().Be( """{"Status":"Value2"}""" );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenEnumsAsFriendlyNames_SerializesEnumAsFriendlyName()
+    {
+        // Arrange
+        var value = new SampleEnumPayload { Status = SampleEnum.Value2 };
+
+        // Act
+        var result = value.ToJson( JsonStringOptions.Minify | JsonStringOptions.EnumsAsFriendlyNames );
+
+        // Assert
+        result.Should().Be( """{"Status":"Value 2"}""" );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenEnumsAsStringsAndFriendlyNames_SerializesEnumAsFriendlyName()
+    {
+        // Arrange
+        var value = new SampleEnumPayload { Status = SampleEnum.Value2 };
+
+        // Act
+        var result = value.ToJson( JsonStringOptions.EnumsAsStrings | JsonStringOptions.EnumsAsFriendlyNames );
+
+        // Assert
+        result.Should().Be( """{"Status":"Value 2"}""" );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenDefaultOptions_RoundTripsNumericEnum()
+    {
+        // Arrange
+        var value = new SampleEnumPayload { Status = SampleEnum.Value1 };
+        var options = JsonStringOptions.Minify;
+        var json = value.ToJson( options );
+
+        // Act
+        var result = JsonConvert.DeserializeObject<SampleEnumPayload>( json, options.ToSerializerSettings() );
+
+        // Assert
+        result.Should().BeEquivalentTo( value );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenEnumsAsFriendlyNames_RoundTripsFriendlyName()
+    {
+        // Arrange
+        var value = new SampleEnumPayload { Status = SampleEnum.Value1 };
+        var options = JsonStringOptions.EnumsAsFriendlyNames;
+        var json = value.ToJson( options );
+
+        // Act
+        var result = JsonConvert.DeserializeObject<SampleEnumPayload>( json, options.ToSerializerSettings() );
+
+        // Assert
+        result.Should().BeEquivalentTo( value );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenEnumsAsStrings_RoundTripsMemberName()
+    {
+        // Arrange
+        var value = new SampleEnumPayload { Status = SampleEnum.Value3 };
+        var options = JsonStringOptions.EnumsAsStrings;
+        var json = value.ToJson( options );
+
+        // Act
+        var result = JsonConvert.DeserializeObject<SampleEnumPayload>( json, options.ToSerializerSettings() );
+
+        // Assert
+        result.Should().BeEquivalentTo( value );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenDefaultOptions_DeserializesStringEnumFromJson()
+    {
+        // Arrange
+        var options = JsonStringOptions.Minify;
+        var json = """{"Status":"Value 2"}""";
+
+        // Act
+        var result = JsonConvert.DeserializeObject<SampleEnumPayload>( json, options.ToSerializerSettings() );
+
+        // Assert
+        result.Should().BeEquivalentTo( new SampleEnumPayload { Status = SampleEnum.Value2 } );
+    }
+
+    [ Fact ]
+    public void ToJson_Object_WhenDefaultOptions_DeserializesMemberNameStringEnumFromJson()
+    {
+        // Arrange
+        var options = JsonStringOptions.Minify;
+        var json = """{"Status":"Value2"}""";
+
+        // Act
+        var result = JsonConvert.DeserializeObject<SampleEnumPayload>( json, options.ToSerializerSettings() );
+
+        // Assert
+        result.Should().BeEquivalentTo( new SampleEnumPayload { Status = SampleEnum.Value2 } );
     }
     #endregion
 }

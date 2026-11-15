@@ -9,4 +9,8 @@ This library includes:
   - JsonParseOptions
   - JsonStringOptions
   - StringDeserializeExtensions.ParseAsJToken()
-  - JTokenSerializeExtensions.ToJson() (JToken, object, Formatting, JsonSerializerSettings)
+  - JTokenSerializeExtensions.ToJson()
+  - JTokenSerializeExtensions.ToSerializerSettings()
+- LTs.Json.Converters
+  - NameEnumConverter&lt;TEnum&gt;
+  - FriendlyNameEnumConverter&lt;TEnum&gt;

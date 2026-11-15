@@ -59,6 +59,22 @@ public class EnumExtensionsTest : BaseTest
     }
     #endregion
 
+    #region ToEnum (Type)
+    [ Theory ]
+    [ InlineData( "Value 2", SampleEnum.Value2 ) ]
+    [ InlineData( "Value2", SampleEnum.Value2 ) ]
+    public void ToEnum_WithEnumType_ParsesFriendlyOrMemberName( string text, SampleEnum expected )
+    {
+        // Arrange
+
+        // Act
+        var result = text.ToEnum( typeof( SampleEnum ) );
+
+        // Assert
+        result.Should().Be( expected );
+    }
+    #endregion
+
     #region ToValueString
     [ Theory ]
     [ InlineData( SampleEnum.None, "None" ) ]
@@ -73,6 +89,19 @@ public class EnumExtensionsTest : BaseTest
 
         // Assert
         result.Should().Be( expected );
+    }
+
+    [ Fact ]
+    public void ToValueString_OnEnum_ReturnsSameAsGeneric()
+    {
+        // Arrange
+        Enum value = SampleEnum.Value3;
+
+        // Act
+        var result = value.ToValueString();
+
+        // Assert
+        result.Should().Be( SampleEnum.Value3.ToValueString() );
     }
 
     [ Fact ]
@@ -109,6 +138,19 @@ public class EnumExtensionsTest : BaseTest
 
         // Assert
         result.Should().Be( expected );
+    }
+
+    [ Fact ]
+    public void ToFriendlyName_OnEnum_ReturnsSameAsGeneric()
+    {
+        // Arrange
+        Enum value = SampleEnum.Value2;
+
+        // Act
+        var result = value.ToFriendlyName();
+
+        // Assert
+        result.Should().Be( SampleEnum.Value2.ToFriendlyName() );
     }
 
     [ Theory ]
