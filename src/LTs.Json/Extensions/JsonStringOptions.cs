@@ -24,5 +24,15 @@ public enum JsonStringOptions
     /// <summary>
     ///     Omit null values when serializing.
     /// </summary>
-    IgnoreNulls = 4
+    IgnoreNulls = 4,
+
+    /// <summary>
+    ///     Enum values as JSON strings using the C# member name (Value2).
+    /// </summary>
+    EnumsAsStrings = 8,
+
+    /// <summary>
+    ///     Enum values as JSON strings using LT friendly names (Value 2). Wins over <see cref="EnumsAsStrings" />.
+    /// </summary>
+    EnumsAsFriendlyNames = 16
 }

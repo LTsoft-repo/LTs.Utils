@@ -1,3 +1,4 @@
+using LTs.Json.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -15,7 +16,7 @@ public static class JTokenSerializeExtensions
     /// <param name="options">The JSON string options.</param>
     /// <returns>The JSON string.</returns>
     public static string ToJson( this object? value, JsonStringOptions options = JsonStringOptions.Minify )
-        => JsonConvert.SerializeObject( value, CreateSerializerSettings( options ) );
+        => JsonConvert.SerializeObject( value, options.ToSerializerSettings() );
 
     /// <summary>
     ///     Converts an object to a JSON string.
@@ -42,7 +43,28 @@ public static class JTokenSerializeExtensions
     /// <param name="options">The JSON string options.</param>
     /// <returns>The JSON string.</returns>
     public static string ToJson( this JToken token, JsonStringOptions options = JsonStringOptions.Minify )
-        => JsonConvert.SerializeObject( token, CreateSerializerSettings( options ) );
+        => JsonConvert.SerializeObject( token, options.ToSerializerSettings() );
+
+    /// <summary>
+    ///     Creates <see cref="JsonSerializerSettings" /> from <see cref="JsonStringOptions" />.
+    /// </summary>
+    /// <param name="options">The JSON string options.</param>
+    /// <returns>The serializer settings.</returns>
+    public static JsonSerializerSettings ToSerializerSettings( this JsonStringOptions options )
+    {
+        var settings = new JsonSerializerSettings
+        {
+            Formatting = GetFormatting( options ),
+            NullValueHandling = options.HasFlag( JsonStringOptions.IgnoreNulls )
+                                    ? NullValueHandling.Ignore
+                                    : NullValueHandling.Include
+        };
+
+        // Reuse returned settings when deserializing so enum flags apply on read as well as ToJson.
+        AddEnumConverter( settings, options );
+
+        return settings;
+    }
 
     private static Formatting GetFormatting( JsonStringOptions options )
     {
@@ -54,12 +76,8 @@ public static class JTokenSerializeExtensions
         return Formatting.None;
     }
 
-    private static JsonSerializerSettings CreateSerializerSettings( JsonStringOptions options )
-        => new()
-        {
-            Formatting = GetFormatting( options ),
-            NullValueHandling = options.HasFlag( JsonStringOptions.IgnoreNulls )
-                                    ? NullValueHandling.Ignore
-                                    : NullValueHandling.Include
-        };
+    private static void AddEnumConverter( JsonSerializerSettings settings, JsonStringOptions options )
+    {
+        settings.Converters.Add( new EnumJsonConverter( options ) );
+    }
 }

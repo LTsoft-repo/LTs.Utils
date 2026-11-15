@@ -18,7 +18,11 @@ This library includes:
   - EquivalencyEqualityComparer&lt;T&gt;
 - LTs.Utils.Extensions.Enums
   - EnumExtensions.ToEnum&lt;T&gt;()
+  - EnumExtensions.ToEnum()
   - EnumExtensions.ToValueString&lt;T&gt;()
+  - EnumExtensions.ToValueString()
+  - EnumExtensions.ToFriendlyName&lt;T&gt;()
+  - EnumExtensions.ToFriendlyName()
 - LTs.Utils.Extensions.DateTimes
   - DateTimeExtensions.GetNext()
   - DateTimeExtensions.GetOffset()
