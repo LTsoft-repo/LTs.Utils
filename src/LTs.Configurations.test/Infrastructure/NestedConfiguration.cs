@@ -5,7 +5,7 @@ namespace LTs.Configurations.test.Infrastructure;
 internal record NestedConfiguration
 {
     [ Required ]
-    public string RequiredValue { get; init; } = string.Empty;
+    public required string RequiredValue { get; init; }
 
     public int OptionalCount { get; init; } = 3;
 }

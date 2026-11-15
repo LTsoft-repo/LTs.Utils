@@ -10,7 +10,7 @@
     <!--Publish Package START-->
     <PropertyGroup>
         <PackageId>LTs.Web</PackageId>
-        <Version>10.0.0-preview5</Version>
+        <Version>10.0.0-preview6</Version>
         <Authors>LTsoft</Authors>
         <Description>LTs.Web</Description>
         <Copyright>Copyright 2026</Copyright>
@@ -22,17 +22,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="README.md" Pack="true" PackagePath="\" />
+        <None Include="README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
     <!--Publish Package END-->
 
     <ItemGroup>
-        <PackageReference Include="IdentityModel" Version="7.0.0" />
+        <PackageReference Include="IdentityModel" Version="7.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\LTs.Configurations\LTs.Configurations.csproj" />
-        <ProjectReference Include="..\LTs.Utils\LTs.Utils.csproj" />
+        <ProjectReference Include="..\LTs.Configurations\LTs.Configurations.csproj"/>
+        <ProjectReference Include="..\LTs.Utils\LTs.Utils.csproj"/>
     </ItemGroup>
 
 </Project>

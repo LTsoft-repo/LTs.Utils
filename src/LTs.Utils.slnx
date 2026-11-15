@@ -1,2 +1,60 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/00_Solution items/">
+    <File Path="../README.md" />
+    <File Path=".editorconfig" />
+  </Folder>
+  <Folder Name="/Configurations/">
+    <Project Path="LTs.Configurations/LTs.Configurations.csproj" />
+  </Folder>
+  <Folder Name="/Configurations/tests/">
+    <Project Path="LTs.Configurations.test/LTs.Configurations.test.csproj" />
+  </Folder>
+  <Folder Name="/DependencyInjections/">
+    <Project Path="LTs.DependencyInjections/LTs.DependencyInjections.csproj" />
+  </Folder>
+  <Folder Name="/DependencyInjections/tests/">
+    <Project Path="LTs.DependencyInjections.test/LTs.DependencyInjections.test.csproj" />
+  </Folder>
+  <Folder Name="/Hosting/">
+    <Project Path="LTs.Hosting/LTs.Hosting.csproj" />
+  </Folder>
+  <Folder Name="/Hosting/tests/">
+    <Project Path="LTs.Hosting.test/LTs.Hosting.test.csproj" />
+  </Folder>
+  <Folder Name="/Json/">
+    <Project Path="LTs.Json/LTs.Json.csproj" />
+  </Folder>
+  <Folder Name="/Json/tests/">
+    <Project Path="LTs.Json.test/LTs.Json.test.csproj" />
+  </Folder>
+  <Folder Name="/Logging/">
+    <Project Path="LTs.Logging/LTs.Logging.csproj" />
+  </Folder>
+  <Folder Name="/Logging/tests/">
+    <Project Path="LTs.Logging.test.Mvc/LTs.Logging.test.Mvc.csproj" />
+    <Project Path="LTs.Logging.test/LTs.Logging.test.csproj" />
+  </Folder>
+  <Folder Name="/TestUtils/">
+    <Project Path="LTs.TestUtils/LTs.TestUtils.csproj" />
+  </Folder>
+  <Folder Name="/TestUtils/tests/">
+    <Project Path="LTs.TestUtils.test/LTs.TestUtils.test.csproj" />
+  </Folder>
+  <Folder Name="/Utils/">
+    <Project Path="LTs.Utils/LTs.Utils.csproj" />
+  </Folder>
+  <Folder Name="/Utils/tests/">
+    <Project Path="LTs.Utils.test/LTs.Utils.test.csproj" />
+  </Folder>
+  <Folder Name="/Web/">
+    <Project Path="LTs.Web/LTs.Web.csproj" />
+  </Folder>
+  <Folder Name="/Web/tests/">
+    <Project Path="LTs.Web.test/LTs.Web.test.csproj" />
+  </Folder>
 </Solution>

@@ -1,0 +1,25 @@
+---
+description: Read shared AGENTS.md and .cursor/rules from ../CodeGuidelines.
+alwaysApply: true
+---
+
+# Shared rules (CodeGuidelines)
+
+Portable agent guidance lives in the sibling **CodeGuidelines** repository.
+
+**Relative to this repository root:**
+
+| Asset | Path |
+|-------|------|
+| Shared `AGENTS.md` | `..\CodeGuidelines\AGENTS.md` |
+| Shared Cursor rules | `..\CodeGuidelines\.cursor\rules\` |
+
+## Required
+
+1. At the start of work that changes code or docs, **read** `..\CodeGuidelines\AGENTS.md`.
+2. **Read** every `.mdc` file in `..\CodeGuidelines\.cursor\rules\` (skip `codeguidelines-rules-root.mdc` when this repository is not CodeGuidelines).
+3. **Read** this repository’s `AGENTS.md` (when present) for repo-specific paths, changelog directory, and commit conventions.
+4. Follow repo-local `.mdc` files in **this** repository’s `.cursor\rules\` (names must start with this repository’s folder name, except `codeguidelines-rules.mdc`).
+5. On conflicts about **this repository’s** paths, packages, or changelog layout, **prefer this repository’s `AGENTS.md`** over `CodeGuidelines\AGENTS.md`.
+
+Edit shared policy under `CodeGuidelines\` (`AGENTS.md` and `.cursor\rules\`); do not copy those files into sibling repositories as part of routine updates.

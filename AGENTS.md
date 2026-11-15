@@ -4,9 +4,10 @@ These rules apply to the entire repository.
 
 ## Agent Base Rules
 
-- Always treat this file (`AGENTS.md`) as the base rule set for every agent session in this repository.
-- Read `AGENTS.md` before making edits, and follow its conventions unless the user explicitly overrides them.
-- When other guidance conflicts with `AGENTS.md`, prefer `AGENTS.md` for repository-specific decisions.
+- Read `..\CodeGuidelines\AGENTS.md` for shared LTsoft repository rules before making edits in this repository.
+- Read every `.mdc` file in `..\CodeGuidelines\.cursor\rules\` per `.cursor/rules/codeguidelines-rules.mdc`.
+- Read this file for **LTs.Utils** paths and overrides below.
+- When this file and `CodeGuidelines\AGENTS.md` disagree on facts for **this** repository, **prefer this file**.
 
 ## Rules Authoring
 
@@ -85,11 +86,13 @@ These rules apply to the entire repository.
 
 ## JSON
 
-- Prefer `LTs.Json` extension methods for JSON parsing and serialization (`ParseAsJToken`, `ToJson`).
-- `Newtonsoft.Json` (`JToken`, `JObject`, `JToken.FromObject`) is the underlying JSON model when `LTs.Json` does not provide a helper.
+- Prefer `LTs.Json` extension methods for JSON parsing and serialization: `ParseAsJToken` (string → `JToken`) and `ToJson` (`JToken` or CLR object → string, optional `JsonStringOptions`).
+- When serializing a CLR object to a JSON string, use `ToJson`. Do not invent a `JToken` via `JToken.FromObject` only to call `ToJson` or `ToString`, and do not call `JsonConvert.SerializeObject` when `ToJson` is available.
+- `Newtonsoft.Json` (`JToken`, `JObject`, `JsonConvert`) is the underlying JSON model when `LTs.Json` does not provide a helper.
 - Do not add `System.Text.Json` usage in new production code unless an existing component in the same area already depends on it.
 - Prefer `JToken` for JSON payloads and schema metadata at tool and API boundaries.
 - Use the same preview version of `LTs.Json` as other LTsoft packages already referenced in the solution.
+- Follow `..\CodeGuidelines\.cursor\rules\json-serialization.mdc` for object vs `JToken` serialization.
 
 ## Solution And Project Layout
 

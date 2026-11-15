@@ -16,6 +16,9 @@ This library includes:
   - IEquivalencyComparer&lt;T&gt;
 - LTs.Utils.Comparers
   - EquivalencyEqualityComparer&lt;T&gt;
+- LTs.Utils.Extensions.Enums
+  - EnumExtensions.ToEnum&lt;T&gt;()
+  - EnumExtensions.ToValueString&lt;T&gt;()
 - LTs.Utils.Extensions.DateTimes
   - DateTimeExtensions.GetNext()
   - DateTimeExtensions.GetOffset()
@@ -51,6 +54,7 @@ This library includes:
   - ReflectionExtensions.GetFieldValue&lt;T&gt;()
   - ReflectionExtensions.GetPropertyValue&lt;T&gt;()
   - ReflectionExtensions.GetDataMemberValue&lt;T&gt;()
+  - ReflectionExpressionExtensions.GetPropertyName&lt;T, TProperty&gt;()
   - ReflectionHelper.CreateInstance&lt;T&gt;()
   - ReflectionHelper.CreateInstance&lt;T&gt;( params object[] )
   - ReflectionPropertiesExtensions.CopyPropertiesFrom()

@@ -3,6 +3,8 @@ using LTs.Configurations.Configurations;
 using LTs.Configurations.Exceptions;
 using LTs.Configurations.Extensions;
 using LTs.Configurations.test.Infrastructure;
+using LTs.Utils;
+using LTs.Utils.Extensions.Enums;
 using Microsoft.Extensions.Configuration;
 
 namespace LTs.Configurations.test.Configurations;
@@ -266,6 +268,244 @@ public class TypedConfigurationLoaderTest : BaseTest
     }
     #endregion
 
+    #region LoadConfigurationOptions
+    [ Fact ]
+    public void LoadConfiguration_WithOptions_BindsOptionalValuesAndDefaults()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "Value1",
+                                                "OptionalCount": 10,
+                                                "OptionalUri": "http://example.com"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<SampleConfiguration>(
+            "Sample",
+            options => options.SetValue<string?, EnumValues>( c => c.EnumValue, v => v.ToEnum<EnumValues>() ) );
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new SampleConfiguration
+            {
+                RequiredName = "primary",
+                EnumValue = EnumValues.Value1,
+                OptionalCount = 10,
+                OptionalUri = new Uri( "http://example.com" )
+            } );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WithOptions_AppliesMultipleSetValues()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "Value3",
+                                                "OptionalCount": 10,
+                                                "OptionalDescription": "%TEMP%\\work",
+                                                "OptionalStringArray": [ "one", "two", "three" ]
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<SampleConfiguration>(
+            "Sample",
+            options => options
+                       .SetValue<string?, EnumValues>( c => c.EnumValue,
+                                                       v => Enum.Parse<EnumValues>( v!, true ) )
+                       .SetValue( c => c.OptionalDescription,
+                                  v => v.ExpandEnvironmentVariables() ?? string.Empty )
+                       .SetValue( c => c.OptionalCount,
+                                  v => v - 1 )
+                       .SetValue( c => c.OptionalStringArray,
+                                  v => v is null
+                                           ? [ ]
+                                           : [ .. v.Select( s => s.ToUpperInvariant() ) ] ) );
+
+        // Assert
+        var expectedDescription = "%TEMP%\\work".ExpandEnvironmentVariables() ?? string.Empty;
+
+        result.Should().BeEquivalentTo(
+            new SampleConfiguration
+            {
+                RequiredName = "primary",
+                EnumValue = EnumValues.Value3,
+                OptionalCount = 9,
+                OptionalDescription = expectedDescription,
+                OptionalStringArray = [ "ONE", "TWO", "THREE" ]
+            } );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WhenNestedObjectsInConfiguration_AppliesSetValue()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Complex": {
+                                                "Nested": {
+                                                  "RequiredValue": "nested-value",
+                                                  "OptionalCount": 7
+                                                },
+                                                "Items": [
+                                                  { "Name": "first" }
+                                                ],
+                                                "OptionalCount": 10
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<ComplexConfiguration>( "Complex",
+                                                                            options => options.SetValue(
+                                                                                n => n.Nested.RequiredValue,
+                                                                                v => v!.ToUpperInvariant() ) );
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new ComplexConfiguration
+            {
+                Nested = new NestedConfiguration
+                {
+                    RequiredValue = "NESTED-VALUE",
+
+                    OptionalCount = 7
+                },
+                Items = [ new ItemConfiguration { Name = "first" } ],
+                OptionalCount = 10
+            } );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WhenParentLoadIncludesMultipleNestedSetValues_AppliesEachConverter()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Complex": {
+                                                "Nested": {
+                                                  "RequiredValue": "nested-value",
+                                                  "OptionalCount": 7
+                                                },
+                                                "Items": [
+                                                  { "Name": "first" }
+                                                ],
+                                                "OptionalCount": 10
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<ComplexConfiguration>(
+            "Complex",
+            options => options
+                       .SetValue( n => n.Nested.RequiredValue, v => v!.ToUpperInvariant() )
+                       .SetValue( n => n.Nested.OptionalCount, v => v - 1 )
+                       .SetValue( n => n.OptionalCount, v => v + 5 ) );
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new ComplexConfiguration
+            {
+                Nested = new NestedConfiguration
+                {
+                    RequiredValue = "NESTED-VALUE",
+                    OptionalCount = 6
+                },
+                Items = [ new ItemConfiguration { Name = "first" } ],
+                OptionalCount = 15
+            } );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WhenNestedSectionLoadedWithOptions_AppliesTypedSetValue()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Complex": {
+                                                "Nested": {
+                                                  "RequiredValue": "nested-value",
+                                                  "OptionalCount": 7
+                                                }
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<NestedConfiguration>(
+            "Complex:Nested",
+            options => options.SetValue( n => n.OptionalCount, v => v - 1 ) );
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new NestedConfiguration
+            {
+                RequiredValue = "nested-value",
+                OptionalCount = 6
+            } );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WithOptions_WhenRootLoaded_StillBindsNestedObject()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Complex": {
+                                                "Nested": {
+                                                  "RequiredValue": "nested-value",
+                                                  "OptionalCount": 7
+                                                },
+                                                "Tags": [ "alpha" ],
+                                                "Items": [
+                                                  { "Name": "first" }
+                                                ]
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<ComplexConfiguration>(
+            "Complex",
+            _ => { } );
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new ComplexConfiguration
+            {
+                Nested = new NestedConfiguration
+                {
+                    RequiredValue = "nested-value",
+                    OptionalCount = 7
+                },
+                Tags = [ "alpha" ],
+                Items = [ new ItemConfiguration { Name = "first" } ]
+            } );
+    }
+    #endregion
+
     #region AddConfiguration
     [ Fact ]
     public void AddConfiguration_ResolvesConfiguration()
@@ -347,6 +587,46 @@ public class TypedConfigurationLoaderTest : BaseTest
     }
 
     [ Fact ]
+    public void AddConfiguration_ResolvesConfigurationWithLoadOptions()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "Value2"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        var containerBuilder = new ContainerBuilder();
+
+        containerBuilder.RegisterInstance( configuration )
+                        .As<IConfiguration>()
+                        .SingleInstance();
+
+        containerBuilder.AddConfiguration<SampleConfiguration>(
+            "Sample",
+            options => options.SetValue<string?, EnumValues>( c => c.EnumValue, v => Enum.Parse<EnumValues>( v!, true ) ),
+            null );
+
+        using var container = containerBuilder.Build();
+
+        // Act
+        var result = container.Resolve<SampleConfiguration>();
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new SampleConfiguration
+            {
+                RequiredName = "primary",
+                EnumValue = EnumValues.Value2
+            } );
+    }
+
+    [ Fact ]
     public void AddConfiguration_AppliesPostLoadConfigurationAction()
     {
         // Arrange
@@ -371,7 +651,7 @@ public class TypedConfigurationLoaderTest : BaseTest
             "Sample",
             loaded => loaded with
             {
-                OptionalDescription = Environment.ExpandEnvironmentVariables( loaded.OptionalDescription )
+                OptionalDescription = loaded.OptionalDescription.ExpandEnvironmentVariables() ?? string.Empty
             } );
 
         using var container = containerBuilder.Build();
@@ -380,7 +660,7 @@ public class TypedConfigurationLoaderTest : BaseTest
         var result = container.Resolve<SampleConfiguration>();
 
         // Assert
-        var expectedDescription = Environment.ExpandEnvironmentVariables( "%TEMP%\\work" );
+        var expectedDescription = "%TEMP%\\work".ExpandEnvironmentVariables() ?? string.Empty;
 
         result.Should().BeEquivalentTo( new SampleConfiguration
         {

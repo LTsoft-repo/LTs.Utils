@@ -27,4 +27,12 @@ public static class EnvironmentUtils
         => Environment.GetEnvironmentVariable( AzureFunctionsEnvironmentVariable ) ??
            Environment.GetEnvironmentVariable( AspNetCoreEnvironmentVariable ) ??
            "Development";
+
+    /// <summary>
+    ///     Expands environment variables in the given string value.
+    /// </summary>
+    /// <param name="value">The string value containing environment variables to expand.</param>
+    /// <returns>The string value with environment variables expanded, or null if the input value is null.</returns>
+    public static string? ExpandEnvironmentVariables( this string? value )
+        => value != null ? Environment.ExpandEnvironmentVariables( value ) : null;
 }

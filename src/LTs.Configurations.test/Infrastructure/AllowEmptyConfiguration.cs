@@ -8,7 +8,7 @@ internal record AllowEmptyConfiguration
     public string RequiredName { get; init; } = string.Empty;
 
     [ Required( AllowEmpty = true ) ]
-    public IReadOnlyList<ItemConfiguration> Items { get; init; } = [ ];
+    public required IReadOnlyList<ItemConfiguration> Items { get; init; }
 
     public IReadOnlyList<ItemConfiguration> ItemsNotRequired { get; init; } = [ ];
 
