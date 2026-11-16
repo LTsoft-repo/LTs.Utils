@@ -39,6 +39,12 @@
     <Project Path="LTs.Logging.test.Mvc/LTs.Logging.test.Mvc.csproj" />
     <Project Path="LTs.Logging.test/LTs.Logging.test.csproj" />
   </Folder>
+  <Folder Name="/Storage/">
+    <Project Path="LTs.Stores/LTs.Stores.csproj" />
+  </Folder>
+  <Folder Name="/Storage/tests/">
+    <Project Path="LTs.Stores.test/LTs.Stores.test.csproj" />
+  </Folder>
   <Folder Name="/TestUtils/">
     <Project Path="LTs.TestUtils/LTs.TestUtils.csproj" />
   </Folder>

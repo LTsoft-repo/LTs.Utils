@@ -8,6 +8,7 @@ Set of utility classes and functions used across LTsoft projects.
 - LTs.Configurations ([README](./src/LTs.Configurations/README.md))
 - LTs.DependencyInjections ([README](./src/LTs.DependencyInjections/README.md))
 - LTs.Json ([README](./src/LTs.Json/README.md))
+- LTs.Stores ([README](./src/LTs.Stores/README.md))
 - LTs.TestUtils ([README](./src/LTs.TestUtils/README.md))
 - LTs.Utils ([README](./src/LTs.Utils/README.md))
 - LTs.Web ([README](./src/LTs.Web/README.md))
