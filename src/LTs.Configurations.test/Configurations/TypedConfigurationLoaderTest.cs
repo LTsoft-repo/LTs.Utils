@@ -1,4 +1,5 @@
 using Autofac;
+using Autofac.Core;
 using LTs.Configurations.Configurations;
 using LTs.Configurations.Exceptions;
 using LTs.Configurations.Extensions;
@@ -15,6 +16,133 @@ public class TypedConfigurationLoaderTest : BaseTest
         : base( testOutput ) { }
 
     #region LoadConfiguration
+    [ Fact ]
+    public void LoadConfiguration_FromSection_BindsConfiguration()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "Value1"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+        var section = configuration.GetSection( "Sample" );
+
+        // Act
+        var result = section.LoadConfiguration<SampleConfiguration>();
+
+        // Assert
+        result.Should().BeEquivalentTo(
+            new SampleConfiguration
+            {
+                RequiredName = "primary",
+                EnumValue = EnumValues.Value1
+            } );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_BindsEnumWithoutSetValue()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "Value2"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<SampleConfiguration>( "Sample" );
+
+        // Assert
+        result.EnumValue.Should().Be( EnumValues.Value2 );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WhenCollectionValueCannotConvert_Throws()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Complex": {
+                                                "Nested": {
+                                                  "RequiredValue": "nested-value"
+                                                },
+                                                "Tags": "alpha",
+                                                "Items": [
+                                                  { "Name": "first" }
+                                                ]
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var act = () => configuration.LoadConfiguration<ComplexConfiguration>( "Complex" );
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage( "Can not convert to type 'String[]'" );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WhenSetValueConverterFails_Throws()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary",
+                                                "EnumValue": "NotAValue"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var act = () => configuration.LoadConfiguration<SampleConfiguration>(
+            "Sample",
+            options => options.SetValue<string?, EnumValues>( c => c.EnumValue,
+                                                             v => Enum.Parse<EnumValues>( v!, true ) ) );
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage( "*Configuration parameter 'Sample:EnumValue' is not of type*" );
+    }
+
+    [ Fact ]
+    public void LoadConfiguration_WhenSetValueAppliesToMissingOptionalProperty_UsesConverterResult()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """
+                                            {
+                                              "Sample": {
+                                                "RequiredName": "primary"
+                                              }
+                                            }
+                                            """ )
+                            .Build();
+
+        // Act
+        var result = configuration.LoadConfiguration<SampleConfiguration>(
+            "Sample",
+            options => options.SetValue<string?, string>( c => c.OptionalDescription, v => v ?? "converted-default" ) );
+
+        // Assert
+        result.OptionalDescription.Should().Be( "converted-default" );
+    }
+
     [ Fact ]
     public void LoadConfiguration_BindsOptionalValuesAndDefaults()
     {
@@ -624,6 +752,33 @@ public class TypedConfigurationLoaderTest : BaseTest
                 RequiredName = "primary",
                 EnumValue = EnumValues.Value2
             } );
+    }
+
+    [ Fact ]
+    public void AddConfiguration_WhenSectionIsMissing_ThrowsOnResolve()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonString( """{ "Other": { "Key": "value" } }""" )
+                            .Build();
+
+        var containerBuilder = new ContainerBuilder();
+
+        containerBuilder.RegisterInstance( configuration )
+                        .As<IConfiguration>()
+                        .SingleInstance();
+
+        containerBuilder.AddConfiguration<SampleConfiguration>( "Sample" );
+
+        using var container = containerBuilder.Build();
+
+        // Act
+        var act = () => container.Resolve<SampleConfiguration>();
+
+        // Assert
+        act.Should().Throw<DependencyResolutionException>()
+           .WithInnerException<ConfigurationException>()
+           .WithMessage( "*Configuration section 'Sample' not defined." );
     }
 
     [ Fact ]

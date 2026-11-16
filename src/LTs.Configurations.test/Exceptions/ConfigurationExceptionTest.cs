@@ -70,6 +70,33 @@ public class ConfigurationExceptionTest
         // Assert
         act.Should().NotThrow();
     }
+
+    [ Fact ]
+    public void ThrowIfNull_NullValueWithMessage_Throws()
+    {
+        // Arrange
+        object? value = null;
+
+        // Act
+        var act = () => ConfigurationException.ThrowIfNull( value, "The setting was not provided." );
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage( "The setting was not provided." );
+    }
+
+    [ Fact ]
+    public void ThrowIfNull_NonNullValueWithMessage_DoesNotThrow()
+    {
+        // Arrange
+        object? value = "configured";
+
+        // Act
+        var act = () => ConfigurationException.ThrowIfNull( value, "The setting was not provided." );
+
+        // Assert
+        act.Should().NotThrow();
+    }
     #endregion
 
     #region ThrowIfNullOrEmpty
@@ -159,6 +186,33 @@ public class ConfigurationExceptionTest
         // Assert
         act.Should().Throw<ConfigurationException>()
            .WithMessage( $"The configuration {name} cannot be empty" );
+    }
+
+    [ Fact ]
+    public void ThrowIfNullOrEmpty_NullValueWithMessage_Throws()
+    {
+        // Arrange
+        string? value = null;
+
+        // Act
+        var act = () => ConfigurationException.ThrowIfNullOrEmpty( value, "The configuration value cannot be empty." );
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage( "The configuration value cannot be empty." );
+    }
+
+    [ Fact ]
+    public void ThrowIfNullOrEmpty_NonEmptyValueWithMessage_DoesNotThrow()
+    {
+        // Arrange
+        string? value = "present";
+
+        // Act
+        var act = () => ConfigurationException.ThrowIfNullOrEmpty( value, "The configuration value cannot be empty." );
+
+        // Assert
+        act.Should().NotThrow();
     }
 
     [ Fact ]
@@ -291,6 +345,33 @@ public class ConfigurationExceptionTest
         // Assert
         act.Should().Throw<ConfigurationException>()
            .WithMessage( $"The configuration {name} cannot be empty" );
+    }
+
+    [ Fact ]
+    public void ThrowIfNullOrWhiteSpace_WhiteSpaceValueWithMessage_Throws()
+    {
+        // Arrange
+        string? value = "   ";
+
+        // Act
+        var act = () => ConfigurationException.ThrowIfNullOrWhiteSpace( value, "The configuration value cannot be empty." );
+
+        // Assert
+        act.Should().Throw<ConfigurationException>()
+           .WithMessage( "The configuration value cannot be empty." );
+    }
+
+    [ Fact ]
+    public void ThrowIfNullOrWhiteSpace_NonWhiteSpaceValueWithMessage_DoesNotThrow()
+    {
+        // Arrange
+        string? value = "value";
+
+        // Act
+        var act = () => ConfigurationException.ThrowIfNullOrWhiteSpace( value, "The configuration value cannot be empty." );
+
+        // Assert
+        act.Should().NotThrow();
     }
 
     [ Fact ]

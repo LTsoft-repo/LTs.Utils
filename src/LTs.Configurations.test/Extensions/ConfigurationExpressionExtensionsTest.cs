@@ -24,6 +24,32 @@ public class ConfigurationExpressionExtensionsTest : BaseTest
     }
 
     [ Fact ]
+    public void GetConfigurationPath_ValueTypePropertyAccess_ReturnsPropertyName()
+    {
+        // Arrange
+        Expression<Func<SampleConfiguration, int>> property = configuration => configuration.OptionalCount;
+
+        // Act
+        var result = property.GetConfigurationPath();
+
+        // Assert
+        result.Should().Be( nameof( SampleConfiguration.OptionalCount ) );
+    }
+
+    [ Fact ]
+    public void GetConfigurationPath_WhenPropertyExpressionIsNull_Throws()
+    {
+        // Arrange
+        Expression<Func<SampleConfiguration, string>>? property = null;
+
+        // Act
+        var act = () => property!.GetConfigurationPath();
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [ Fact ]
     public void GetConfigurationPath_NestedPropertyAccess_ReturnsColonSeparatedPath()
     {
         // Arrange
