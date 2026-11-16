@@ -6,7 +6,6 @@ using Autofac.Core.Activators;
 using Autofac.Core.Activators.Delegate;
 using Autofac.Core.Activators.Reflection;
 using Autofac.Core.Resolving.Pipeline;
-using Autofac.Extensions.DependencyInjection;
 using LTs.DependencyInjections.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using AutofacServiceProvider = LTs.DependencyInjections.DependencyInjection.AutofacServiceProvider;
@@ -50,7 +49,7 @@ public static class AutofacPopulateExtensions
     public static void Populate(
         this ContainerBuilder builder,
         IEnumerable<ServiceDescriptor> descriptors )
-        => Populate( builder, descriptors, null );
+        => builder.Populate( descriptors, null );
 
     // ReSharper disable once GrammarMistakeInComment
     /// <summary>
@@ -84,10 +83,9 @@ public static class AutofacPopulateExtensions
     ///     </para>
     /// </remarks>
     [ UsedImplicitly ]
-    public static void Populate(
-        this ContainerBuilder builder,
-        IEnumerable<ServiceDescriptor> descriptors,
-        object? lifetimeScopeTagForSingletons )
+    public static void Populate( this ContainerBuilder builder,
+                                 IEnumerable<ServiceDescriptor> descriptors,
+                                 object? lifetimeScopeTagForSingletons )
     {
         if( descriptors is null )
         {
@@ -113,7 +111,6 @@ public static class AutofacPopulateExtensions
             .SingleInstance();
 
         // Shims for keyed service compatibility.
-        builder.RegisterSource<AnyKeyRegistrationSource>();
         builder.ComponentRegistryBuilder.Registered += AddFromKeyedServiceParameterMiddleware;
 
         Register( builder, descriptors, lifetimeScopeTagForSingletons );
@@ -214,6 +211,11 @@ public static class AutofacPopulateExtensions
             var key = descriptor.ServiceKey!;
 
             // If it's keyed, the service key won't be null. A null key results in it _not_ being a keyed service.
+            if( key.Equals( Microsoft.Extensions.DependencyInjection.KeyedService.AnyKey ) )
+            {
+                key = KeyedService.AnyKey;
+            }
+
             registrationBuilder.Keyed( key, descriptor.ServiceType );
         }
         else

@@ -127,11 +127,11 @@ public class MockHttpClientExtensionsTest
 
         // Assert
         act.Should().Throw<XunitException>()
-           .WithMessage(
-               //"""Expected responseContent to be equivalent to "invalid_request" with a length of 15, """ +
-               //"""but "invalid_request_x" has a length of 17, differs near "_x" (index 15).""" );
-               @"Expected responseContent to be equivalent to ""invalid_request"" with a length of 15, " +
-               @"but ""invalid_request_x"" has a length of 17, differs near ""_x"" (index 15)." );
+           .WithMessage( "Expected responseContent to be equivalent to the same string, but they differ at index 15:*" +
+                         "            ↓ (actual)*" +
+                         "\"…id_request_x\"*" +
+                         "\"…id_request\"*" +
+                         "            ↑ (expected)." );
     }
 
     [ Fact ]
