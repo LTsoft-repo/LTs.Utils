@@ -3,8 +3,6 @@ using Autofac;
 using LTs.DependencyInjections.DependencyInjection;
 using LTs.DependencyInjections.DependencyInjection.Resources;
 
-// ToDo: Add tests.
-
 namespace LTs.DependencyInjections.Extensions;
 
 // ReSharper disable once GrammarMistakeInComment
