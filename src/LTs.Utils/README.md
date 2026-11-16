@@ -64,6 +64,12 @@ This library includes:
   - ReflectionPropertiesExtensions.CopyPropertiesFrom()
   - ReflectionPropertiesExtensions.GetProperty()
   - ReflectionPropertiesExtensions.SetProperty()
+- LTs.Utils.Time.Abstractions
+  - IDateTimeOffsetProvider
+- LTs.Utils.Time
+  - DateTimeOffsetProvider
+- LTs.Utils.Time.DependencyInjection
+  - RegistrationExtensions.AddDateTimeOffsetProvider()
 - LTs.Utils
   - EnvironmentUtils.AzureFunctionsEnvironmentVariable
   - EnvironmentUtils.AspNetCoreEnvironmentVariable
