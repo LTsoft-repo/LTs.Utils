@@ -72,6 +72,143 @@ public class HttpResponseMessageFluentAssertionExtensionsTest
     }
     #endregion
 
+    #region HaveContentWithMediaType
+    [ Fact ]
+    public void HaveContentWithMediaType_WithJsonContent_Succeeds()
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage
+        {
+            Content = CreateJsonContent( new { Test = "value" } )
+        };
+
+        // Act
+        var act = () => httpResponseMessage.Should()
+                                           .HaveContentWithMediaType( "application/json", "utf-8" );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void HaveContentWithMediaType_WhenContentTypeIsMissing_Throws()
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage
+        {
+            Content = new StringContent( "{}" )
+        };
+
+        // Act
+        var act = () => httpResponseMessage.Should()
+                                           .HaveContentWithMediaType( "application/json", "utf-8" );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .WithMessage( "*Expected content type*application/json*text/plain*" );
+    }
+
+    [ Fact ]
+    public void HaveContentWithMediaType_WhenCharsetDiffers_Throws()
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage
+        {
+            Content = new StringContent( "{}" )
+        };
+        httpResponseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/json" )
+        {
+            CharSet = "iso-8859-1"
+        };
+
+        // Act
+        var act = () => httpResponseMessage.Should()
+                                           .HaveContentWithMediaType( "application/json", "utf-8" );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .WithMessage( "*Expected charset*utf-8*iso-8859-1*" );
+    }
+    #endregion
+
+    #region ContainsHeaderWithValues
+    [ Fact ]
+    public void ContainsHeaderWithValues_WhenHeaderContainsValues_Succeeds()
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage();
+        httpResponseMessage.Headers.Add( "X-Custom", [ "alpha", "beta" ] );
+
+        // Act
+        var act = () => httpResponseMessage.Should()
+                                           .ContainsHeaderWithValues( "X-Custom", [ "alpha" ] );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void ContainsHeaderWithValues_WhenHeaderIsMissing_Throws()
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage();
+
+        // Act
+        var act = () => httpResponseMessage.Should()
+                                           .ContainsHeaderWithValues( "X-Custom", [ "alpha" ] );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .WithMessage( "*Expected not to header*X-Custom*" );
+    }
+
+    [ Fact ]
+    public void ContainsHeaderWithValues_WhenValueIsMissing_Throws()
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage();
+        httpResponseMessage.Headers.Add( "X-Custom", [ "alpha" ] );
+
+        // Act
+        var act = () => httpResponseMessage.Should()
+                                           .ContainsHeaderWithValues( "X-Custom", [ "missing" ] );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .WithMessage( "*Expected header*X-Custom*missing*alpha*" );
+    }
+    #endregion
+
+    #region NotContainsHeader
+    [ Fact ]
+    public void NotContainsHeader_WhenHeaderIsAbsent_Succeeds()
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage();
+
+        // Act
+        var act = () => httpResponseMessage.Should().NotContainsHeader( "X-Custom" );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void NotContainsHeader_WhenHeaderIsPresent_Throws()
+    {
+        // Arrange
+        var httpResponseMessage = new HttpResponseMessage();
+        httpResponseMessage.Headers.Add( "X-Custom", [ "alpha" ] );
+
+        // Act
+        var act = () => httpResponseMessage.Should().NotContainsHeader( "X-Custom" );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .WithMessage( "*Expected not to contain header*X-Custom*" );
+    }
+    #endregion
+
     private static StringContent CreateJsonContent( object content )
     {
         var messageContent = new StringContent(

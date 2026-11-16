@@ -1,4 +1,5 @@
-﻿using LTs.TestUtils.test.Infrastructure;
+﻿using LTs.TestUtils.FluentAssertions;
+using LTs.TestUtils.test.Infrastructure;
 
 namespace LTs.TestUtils.test.Tests;
 
@@ -62,6 +63,40 @@ public class BaseTestTest
         // Assert
         var disposables = test.GetDisposables();
         disposables.Should().BeEmpty();
+    }
+
+    [ Fact ]
+    public void Dispose_WhenDisposableThrows_WritesErrorToTestOutput()
+    {
+        // Arrange
+        var test = new TestClass( testOutput );
+        test.AddDisposable( new ThrowingDisposableClass() );
+
+        // Act
+        test.Dispose();
+
+        // Assert
+        var output = test.GetTestOutput();
+        var assertAct = () => output.Should().HaveMessage().Containing( "Error disposing ThrowingDisposableClass" );
+        assertAct.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void Dispose_WhenDisposableAlreadyDisposed_IgnoresObjectDisposedException()
+    {
+        // Arrange
+        var test = new TestClass( testOutput );
+        test.AddDisposable( new ObjectDisposedDisposableClass() );
+
+        // Act
+        var disposeAct = () => test.Dispose();
+
+        // Assert
+        disposeAct.Should().NotThrow();
+
+        var output = test.GetTestOutput();
+        var assertAct = () => output.Should().NotHaveMessage().Containing( "Error disposing ObjectDisposedDisposableClass" );
+        assertAct.Should().NotThrow();
     }
     #endregion
 }

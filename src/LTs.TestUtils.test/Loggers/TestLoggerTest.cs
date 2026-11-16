@@ -55,4 +55,29 @@ public class TestLoggerTest
         testOutput.Should().HaveMessage().Containing( typeof( TestLoggerTest ).FullName! );
     }
     #endregion
+
+    #region LogLevelTags
+    [ Theory ]
+    [ InlineData( LogLevel.Trace, "TRC" ) ]
+    [ InlineData( LogLevel.Debug, "DBG" ) ]
+    [ InlineData( LogLevel.Information, "INF" ) ]
+    [ InlineData( LogLevel.Warning, "WRN" ) ]
+    [ InlineData( LogLevel.Error, "ERR" ) ]
+    [ InlineData( LogLevel.Critical, "CRT" ) ]
+    [ InlineData( LogLevel.None, "UNK" ) ]
+    public void TestLogger_WritesLogLevelTag( LogLevel logLevel, string expectedTag )
+    {
+        // Arrange
+        var logger = new TestLogger( testOutput );
+
+        // Act
+        logger.Log( logLevel, new EventId( 1 ), "Tagged message", null, ( state, _ ) => state?.ToString() ?? "" );
+
+        // Assert
+        var act = () => testOutput.Should().HaveMessage( logLevel ).Containing( "Tagged message" );
+        act.Should().NotThrow();
+
+        testOutput.Should().HaveMessage().Containing( $"[{expectedTag}]" );
+    }
+    #endregion
 }

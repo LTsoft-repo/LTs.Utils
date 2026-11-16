@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using LTs.TestUtils.Loggers;
+using LTs.TestUtils.test.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace LTs.TestUtils.test.Loggers;
@@ -117,6 +118,42 @@ public class InMemoryLoggerTest
 
         // Act & Assert
         result.Should().BeTrue();
+    }
+    #endregion
+
+    #region WriteTo
+    [ Fact ]
+    public void WriteTo_WithTestOutputHelper_WritesMessages()
+    {
+        // Arrange
+        var logger = new InMemoryLogger();
+        logger.LogInformation( "First message." );
+        logger.LogWarning( "Second message." );
+        var outputHelper = new CapturingTestOutputHelper();
+
+        // Act
+        logger.WriteTo( outputHelper );
+
+        // Assert
+        outputHelper.Lines.Count.Should().Be( 2 );
+        outputHelper.Lines[ 0 ].Should().Contain( "First message." );
+        outputHelper.Lines[ 1 ].Should().Contain( "Second message." );
+    }
+
+    [ Fact ]
+    public void WriteTo_WithAction_InvokesActionForEachMessage()
+    {
+        // Arrange
+        var logger = new InMemoryLogger();
+        logger.LogInformation( "Action message." );
+        var lines = new List<string>();
+
+        // Act
+        logger.WriteTo( message => lines.Add( message.ToString() ) );
+
+        // Assert
+        lines.Count.Should().Be( 1 );
+        lines[ 0 ].Should().Contain( "Action message." );
     }
     #endregion
 

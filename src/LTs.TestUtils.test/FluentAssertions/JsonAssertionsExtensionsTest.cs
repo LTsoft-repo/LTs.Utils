@@ -1,5 +1,6 @@
 ﻿using LTs.TestUtils.FluentAssertions;
 using LTs.TestUtils.Tests;
+using Newtonsoft.Json.Linq;
 using Xunit.Sdk;
 
 #pragma warning disable IDE0290 // Primary constructor should be used
@@ -515,6 +516,108 @@ public class JsonAssertionsExtensionsTest : BaseTest
         // Assert
         act.Should().ThrowExactly<XunitException>()
            .WithMessage( "JSON document misses property $.field1.*" );
+    }
+    #endregion
+
+    #region BeSameJsonAsJToken
+    [ Fact ]
+    public void BeSameJsonAs_JToken_SameJson_Succeeds()
+    {
+        // Arrange
+        var subject = JObject.Parse( """{ "name": "John", "age": 30 }""" );
+        var expectedJson = """{ "name": "John", "age": 30 }""";
+
+        // Act
+        var act = () => subject.Should().BeSameJsonAs( expectedJson );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_JToken_WithExcludedPaths_Succeeds()
+    {
+        // Arrange
+        var subject = JObject.Parse( """{ "id": "1", "name": "John" }""" );
+        var expectedJson = """{ "id": "2", "name": "John" }""";
+
+        // Act
+        var act = () => subject.Should().BeSameJsonAs( expectedJson, [ "id" ] );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_JToken_WithConfigureOptions_Succeeds()
+    {
+        // Arrange
+        var subject = JObject.Parse( """{ "name": "John", "age": 30, "extra": "x" }""" );
+        var expectedJson = """{ "name": "John", "age": 30 }""";
+
+        // Act
+        var act = () => subject.Should().BeSameJsonAs( expectedJson, options => options.IgnoringExtraFields() );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_JTokenToJToken_Succeeds()
+    {
+        // Arrange
+        var subject = JObject.Parse( """{ "name": "John" }""" );
+        var expected = JObject.Parse( """{ "name": "John" }""" );
+
+        // Act
+        var act = () => subject.Should().BeSameJsonAs( expected );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void BeSameJsonAs_JTokenToJToken_WithConfigureOptions_Succeeds()
+    {
+        // Arrange
+        var subject = JObject.Parse( """{ "name": "John", "extra": "ignored" }""" );
+        var expected = JObject.Parse( """{ "name": "John" }""" );
+
+        // Act
+        var act = () => subject.Should().BeSameJsonAs( expected, options => options.IgnoringExtraFields() );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+    #endregion
+
+    #region NotBeSameJsonAsJToken
+    [ Fact ]
+    public void NotBeSameJsonAs_JTokenString_WhenDifferent_Succeeds()
+    {
+        // Arrange
+        var subject = JObject.Parse( """{ "name": "John" }""" );
+        var expectedJson = """{ "name": "Jane" }""";
+
+        // Act
+        var act = () => subject.Should().NotBeSameJsonAs( expectedJson );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void NotBeSameJsonAs_JToken_WhenEquivalent_Throws()
+    {
+        // Arrange
+        var subject = JObject.Parse( """{ "name": "John" }""" );
+        var expected = JObject.Parse( """{ "name": "John" }""" );
+
+        // Act
+        var act = () => subject.Should().NotBeSameJsonAs( expected );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>();
     }
     #endregion
 }

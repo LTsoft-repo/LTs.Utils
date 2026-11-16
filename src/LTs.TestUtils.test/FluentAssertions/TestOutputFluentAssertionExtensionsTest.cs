@@ -1,5 +1,6 @@
 using LTs.TestUtils.FluentAssertions;
 using LTs.TestUtils.Loggers;
+using LTs.TestUtils.test.Infrastructure;
 using LTs.TestUtils.Tests;
 using Microsoft.Extensions.Logging;
 using Xunit.Sdk;
@@ -69,6 +70,35 @@ public class TestOutputFluentAssertionExtensionsTest : BaseTest
         // Assert
         act.Should().NotThrow();
     }
+
+    [ Fact ]
+    public void HaveMessage_AtLogLevel_Containing_WhenMessageAtDifferentLevel_Throws()
+    {
+        // Arrange
+        var logger = new TestLogger( TestOutput );
+        logger.LogWarning( "Something happened." );
+
+        // Act
+        var act = () => TestOutput.Should().HaveMessage( LogLevel.Error ).Containing( "Something happened." );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .WithMessage( "*Expected test output to have a message at level*Error*" );
+    }
+
+    [ Fact ]
+    public void Should_WithUnsupportedTestOutputHelper_Throws()
+    {
+        // Arrange
+        var plainOutput = new PlainTestOutputHelper();
+
+        // Act
+        var act = () => plainOutput.Should().HaveMessage().Containing( "any" );
+
+        // Assert
+        act.Should().ThrowExactly<InvalidOperationException>()
+           .WithMessage( "Cannot read captured output from*PlainTestOutputHelper*" );
+    }
     #endregion
 
     #region NotHaveMessage
@@ -97,6 +127,21 @@ public class TestOutputFluentAssertionExtensionsTest : BaseTest
         // Assert
         act.Should().ThrowExactly<XunitException>()
            .WithMessage( "Expected test output not to have a message containing \"Application started.\"*, but found:*" );
+    }
+
+    [ Fact ]
+    public void NotHaveMessage_AtLogLevel_Containing_WhenLogLevelIsPresentWithoutSubstring_Throws()
+    {
+        // Arrange
+        var logger = new TestLogger( TestOutput );
+        logger.LogError( "Application failed." );
+
+        // Act
+        var act = () => TestOutput.Should().NotHaveMessage( LogLevel.Error ).Containing( string.Empty );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .WithMessage( "*Expected test output not to have a message at level*Error*, but found:*" );
     }
     #endregion
 }

@@ -44,6 +44,20 @@ public class LoggerAssertionsTest : BaseTest
     }
 
     [ Fact ]
+    public void Should_WithTestLoggerT_HaveMessage_Containing_Succeeds()
+    {
+        // Arrange
+        ILogger<LoggerAssertionsTest> logger = new TestLogger<LoggerAssertionsTest>( TestOutput );
+        logger.LogInformation( "Application started." );
+
+        // Act
+        var act = () => logger.Should().HaveMessage().Containing( "Application started." );
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [ Fact ]
     public void Should_WithTestLoggerT_NotHaveMessage_AtLogLevel_Containing_Succeeds()
     {
         // Arrange
@@ -114,6 +128,21 @@ public class LoggerAssertionsTest : BaseTest
 
         // Assert
         act.Should().NotThrow();
+    }
+
+    [ Fact ]
+    public void HaveMessage_AtLogLevel_Containing_WhenMessageAtDifferentLevel_Throws()
+    {
+        // Arrange
+        ILogger logger = new InMemoryLogger();
+        logger.LogWarning( "Something happened." );
+
+        // Act
+        var act = () => logger.Should().HaveMessage( LogLevel.Error ).Containing( "Something happened." );
+
+        // Assert
+        act.Should().ThrowExactly<XunitException>()
+           .WithMessage( "Expected logger to have a message at level*Error*" );
     }
     #endregion
 
